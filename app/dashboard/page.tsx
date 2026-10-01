@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,9 +10,11 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, role, companies(name)")
     .eq("id", user.id)
     .single();
+
+  const company = Array.isArray(profile?.companies) ? profile.companies[0] : profile?.companies;
 
   async function signOut() {
     "use server";
@@ -27,8 +30,14 @@ export default async function DashboardPage() {
         {profile?.full_name ?? user.email}
       </h1>
       <p className="mt-4 text-ink-soft">
+        {company?.name && <>{company.name} &middot; </>}
         {user.email} &middot; role: <span className="font-mono text-ink">{profile?.role ?? "none"}</span>
       </p>
+      {profile?.role === "super_admin" && (
+        <Link href="/admin/access-requests" className="mt-6 inline-block text-sm font-medium text-sunset underline underline-offset-4">
+          Review access requests &rarr;
+        </Link>
+      )}
       <form action={signOut} className="mt-10">
         <button
           type="submit"

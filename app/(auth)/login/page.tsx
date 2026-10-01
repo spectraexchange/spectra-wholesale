@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Notice } from "@/components/form";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign in · Spectra Wholesale" };
 
 const NOTICES: Record<string, { tone: "error" | "success"; text: string }> = {
-  link: { tone: "error", text: "That link has expired or was already used. Request a new one below." },
+  link: { tone: "error", text: "That link has expired or was already used. Use \u201cForgot password?\u201d below to get a fresh one." },
   "password-updated": { tone: "success", text: "Password updated. Sign in with your new password." },
   "signed-out": { tone: "success", text: "You’ve been signed out." },
 };
@@ -24,12 +25,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
       <div className="mt-8 border-t border-line pt-6 text-sm text-ink-soft">
         New to Spectra?{" "}
-        <a
-          href="mailto:info@spectrawholesale.com?subject=Spectra%20Wholesale%20access%20request"
+        <Link
+          href="/request-access"
           className="font-medium text-ink underline decoration-sunset decoration-2 underline-offset-4 transition-colors hover:text-sunset"
         >
           Request access
-        </a>
+        </Link>
       </div>
     </>
   );

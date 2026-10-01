@@ -2,8 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Signed-in users skip these; everyone else is sent to /login from PROTECTED.
-const AUTH_PAGES = ["/login", "/forgot-password"];
-const PROTECTED = ["/dashboard", "/reset-password"];
+const AUTH_PAGES = ["/login", "/forgot-password", "/request-access"];
+const PROTECTED = ["/dashboard", "/reset-password", "/set-password", "/admin"];
 
 // Refreshes the Supabase auth session on every request, then applies coarse redirects.
 // This is an optimistic check only — pages still verify the user themselves.

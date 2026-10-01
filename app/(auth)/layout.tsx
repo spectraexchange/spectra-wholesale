@@ -6,7 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <main className="relative isolate flex min-h-dvh flex-col bg-night lg:flex-row lg:items-center">
       <AuroraSky className="absolute inset-0 -z-10" />
 
-      <div className="flex flex-1 flex-col justify-between gap-10 px-6 pt-8 pb-10 sm:px-10 lg:min-h-dvh lg:py-12 lg:pl-16">
+      <div className="flex flex-1 flex-col justify-between gap-10 px-6 pt-8 pb-10 sm:px-10 lg:sticky lg:top-0 lg:h-dvh lg:self-start lg:py-12 lg:pl-16">
         <Image
           src="/spectra-logo.png"
           alt="Spectra Wholesale"
