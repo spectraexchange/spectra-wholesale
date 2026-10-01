@@ -36,7 +36,8 @@ export async function getViewer(): Promise<Viewer | null> {
 export function homeFor(role: string) {
   if (role === "super_admin") return "/admin/access-requests";
   if (role === "seller" || role === "seller_admin") return "/seller/products";
-  return "/dashboard"; // buyer home until the buyer side is built
+  if (role === "buyer" || role === "buyer_admin") return "/buyer/browse";
+  return "/dashboard";
 }
 
 export async function requireSuperAdmin() {
@@ -51,5 +52,13 @@ export async function requireSeller() {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
   if (!["seller", "seller_admin"].includes(viewer.role) || !viewer.company) redirect(homeFor(viewer.role));
+  return viewer as Viewer & { company: NonNullable<Viewer["company"]> };
+}
+
+// Buyers act for their own company; carts are per user, orders per company.
+export async function requireBuyer() {
+  const viewer = await getViewer();
+  if (!viewer) redirect("/login");
+  if (!["buyer", "buyer_admin"].includes(viewer.role) || !viewer.company) redirect(homeFor(viewer.role));
   return viewer as Viewer & { company: NonNullable<Viewer["company"]> };
 }

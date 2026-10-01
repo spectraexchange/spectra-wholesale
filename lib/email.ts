@@ -14,6 +14,8 @@ export function escapeHtml(value: string) {
 }
 
 export async function sendEmail(opts: { to: string; subject: string; html: string; from?: string }) {
+  // RFC 2606 reserved domains can never receive mail; skip them (used by test accounts).
+  if (/@(.+\.)?(example\.(com|org|net)|test|invalid)$/i.test(opts.to)) return { error: undefined };
   const { error } = await resend.emails.send({
     from: opts.from ?? "Spectra Wholesale <info@spectrawholesale.com>",
     to: opts.to,
@@ -62,5 +64,68 @@ export function newRequestEmail(opts: { name: string; company: string; accountTy
     <h1 style="margin:0 0 12px;font-family:Georgia,serif;font-weight:normal;font-size:24px;">New access request</h1>
     <p style="margin:0 0 24px;"><strong>${escapeHtml(opts.company)}</strong> (${kind}, ${escapeHtml(opts.city)})<br>Submitted by ${escapeHtml(opts.name)}</p>
     <p style="margin:0;">${button(opts.reviewUrl, "Review request")}</p>
+  `);
+}
+
+type EmailLine = { name: string; qty: string; lineTotal: string };
+
+function linesTable(lines: EmailLine[], total: string) {
+  const rows = lines
+    .map(
+      (l) => `<tr>
+        <td style="padding:8px 0;border-bottom:1px solid #d9cba8;">${escapeHtml(l.name)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #d9cba8;text-align:right;color:#5a5246;white-space:nowrap;">${escapeHtml(l.qty)}</td>
+        <td style="padding:8px 0 8px 16px;border-bottom:1px solid #d9cba8;text-align:right;font-family:Menlo,monospace;white-space:nowrap;">${escapeHtml(l.lineTotal)}</td>
+      </tr>`,
+    )
+    .join("");
+  return `<table style="width:100%;border-collapse:collapse;font-size:14px;margin:0 0 24px;">${rows}
+    <tr><td colspan="2" style="padding:12px 0 0;font-weight:600;">Total</td>
+    <td style="padding:12px 0 0;text-align:right;font-family:Menlo,monospace;font-weight:600;">${escapeHtml(total)}</td></tr></table>`;
+}
+
+export function newOrderEmail(opts: {
+  orderNumber: string;
+  buyer: string;
+  deliverTo: string;
+  notes: string | null;
+  lines: EmailLine[];
+  total: string;
+  link: string;
+}) {
+  return layout(`
+    <h1 style="margin:0 0 6px;font-family:Georgia,serif;font-weight:normal;font-size:26px;">New order ${escapeHtml(opts.orderNumber)}</h1>
+    <p style="margin:0 0 24px;color:#5a5246;">From <strong style="color:#1b1813;">${escapeHtml(opts.buyer)}</strong> &middot; deliver to ${escapeHtml(opts.deliverTo)}</p>
+    ${linesTable(opts.lines, opts.total)}
+    ${opts.notes ? `<p style="margin:0 0 24px;padding:12px 14px;border-left:3px solid #c4461a;background:#efe3c6;">${escapeHtml(opts.notes)}</p>` : ""}
+    <p style="margin:0;">${button(opts.link, "Review and confirm")}</p>
+  `);
+}
+
+const STATUS_COPY: Record<string, { heading: string; body: string }> = {
+  pending: { heading: "Order placed", body: "We sent it to the vendor. You’ll get an email when they confirm." },
+  confirmed: { heading: "Order confirmed", body: "The vendor confirmed your order." },
+  shipped: { heading: "Out for delivery", body: "Your order is on its way." },
+  delivered: { heading: "Delivered", body: "The vendor marked your order delivered." },
+  cancelled: { heading: "Order cancelled", body: "This order was cancelled. Reach out to the vendor with any questions." },
+};
+
+export function orderUpdateEmail(opts: {
+  status: string;
+  orderNumber: string;
+  vendor: string;
+  deliveryDate: string | null;
+  lines: EmailLine[];
+  total: string;
+  link: string;
+}) {
+  const copy = STATUS_COPY[opts.status] ?? STATUS_COPY.pending;
+  return layout(`
+    <p style="margin:0 0 6px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#5a5246;">${escapeHtml(opts.orderNumber)} &middot; ${escapeHtml(opts.vendor)}</p>
+    <h1 style="margin:0 0 12px;font-family:Georgia,serif;font-weight:normal;font-size:26px;">${copy.heading}</h1>
+    <p style="margin:0 0 ${opts.deliveryDate ? "8px" : "24px"};">${copy.body}</p>
+    ${opts.deliveryDate ? `<p style="margin:0 0 24px;"><strong>Delivery:</strong> ${escapeHtml(opts.deliveryDate)}</p>` : ""}
+    ${linesTable(opts.lines, opts.total)}
+    <p style="margin:0;">${button(opts.link, "View order")}</p>
   `);
 }

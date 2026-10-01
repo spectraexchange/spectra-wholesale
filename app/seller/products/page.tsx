@@ -114,8 +114,8 @@ export default async function ProductsPage({ searchParams }: PageProps<"/seller/
               </div>
 
               <div className="hidden text-right sm:block">
-                <p className={`font-mono text-[15px] ${p.stock_qty === 0 ? "text-danger" : ""}`}>{p.stock_qty}</p>
-                <p className="text-[12px] text-ink-soft">{p.stock_qty === 0 ? "out of stock" : "in stock"}</p>
+                <p className={`font-mono text-[15px] ${p.stock_qty <= 0 ? "text-danger" : ""}`}>{p.stock_qty}</p>
+                <p className="text-[12px] text-ink-soft">{p.stock_qty <= 0 ? "out of stock" : "in stock"}</p>
               </div>
 
               <ProductRowActions id={p.id} name={p.name} view={view} />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type NavItem = { href: string; label: string };
+export type NavItem = { href: string; label: string; count?: number };
 
 export function NavLinks({ items, className = "" }: { items: NavItem[]; className?: string }) {
   const pathname = usePathname();
@@ -22,6 +22,7 @@ export function NavLinks({ items, className = "" }: { items: NavItem[]; classNam
             }`}
           >
             {item.label}
+            {!!item.count && <span className="ml-1.5 font-mono text-[12px] text-amber">{item.count}</span>}
           </Link>
         );
       })}

@@ -136,3 +136,9 @@ export const unitLabel = (value: string) => labelFor(UNITS, value);
 
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 export const formatMoney = (value: number) => money.format(value);
+
+// "6 units", "1 pack", "250 mL"
+export function formatQty(quantity: number, unit: string) {
+  const label = unitLabel(unit);
+  return `${quantity} ${label}${quantity === 1 || unit === "ml" ? "" : "s"}`;
+}

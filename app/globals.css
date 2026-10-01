@@ -22,6 +22,8 @@
   --danger-tint: #f6ddd5;
   --success: #3f6b3a;
   --success-tint: #dfe8d3;
+  --pending: #8f5400;        /* amber that passes contrast on cream */
+  --info: #1f5c66;
 }
 
 [data-theme="dark"] {
@@ -41,6 +43,8 @@
   --danger-tint: #3a1c18;
   --success: #93c283;
   --success-tint: #16281a;
+  --pending: #f2a531;
+  --info: #7cc0ca;
 }
 
 /* Fixed in both themes */
@@ -73,6 +77,8 @@
   --color-danger-tint: var(--danger-tint);
   --color-success: var(--success);
   --color-success-tint: var(--success-tint);
+  --color-pending: var(--pending);
+  --color-info: var(--info);
   --font-sans: var(--font-jakarta);
   --font-display: var(--font-fraunces);
   --font-mono: var(--font-jetbrains);
