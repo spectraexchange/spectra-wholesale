@@ -35,6 +35,13 @@ internal dashboards. New UI should feel like it belongs next to that sign-in pan
 ## Data rules
 
 - Admin/server data that crosses companies uses `createServiceClient()`; role checks via `lib/auth.ts`.
+- Vendor pages/actions call `requireSeller()` and filter every query by `company.id`
+  (`.eq("seller_company_id", company.id)`), since the service client bypasses RLS.
+- Product vocabulary (categories, types, units, containers) lives in `lib/catalog.ts` and must
+  match the DB check constraints.
+- Uploads go browser → storage via signed upload URLs created in a server action (keeps files out
+  of the 4.5 MB server-action body limit and inside the right folder).
+- Reuse `useLiveErrors` from `components/form.tsx` so field errors clear as soon as they're edited.
 - Never add companies↔profiles joins to RLS policies (caused infinite recursion before).
 - Access-request approval must copy every submitted field onto `companies`/`profiles`
   (`app/admin/access-requests/actions.ts`) so users never re-enter data.

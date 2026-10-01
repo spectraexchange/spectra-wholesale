@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useRef, useState, startTransition } from "react";
-import { Field, FieldError, Label, Notice, SubmitButton, TextArea } from "@/components/form";
+import { Field, FieldError, Label, Notice, SubmitButton, TextArea, useLiveErrors } from "@/components/form";
 import { LICENSE_BUCKET, LICENSE_DOCS, type LicenseDocKey } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/client";
 import { createUploadSlot, submitRequest, type RequestState } from "./actions";
@@ -45,6 +45,8 @@ export function RequestForm() {
     return submitRequest(prev, formData);
   }, {});
 
+  const { errors: serverErrors, markEdited } = useLiveErrors(state.fieldErrors);
+
   if (state.done) {
     return (
       <>
@@ -64,7 +66,7 @@ export function RequestForm() {
     );
   }
 
-  const errors = { ...state.fieldErrors, ...uploadError };
+  const errors: Record<string, string | undefined> = { ...serverErrors, ...uploadError };
 
   return (
     <>
@@ -74,6 +76,7 @@ export function RequestForm() {
       />
       <form
         noValidate
+        onChange={markEdited}
         onSubmit={(e) => {
           // Submit manually so React doesn't reset this long form after a failed attempt.
           e.preventDefault();
@@ -147,6 +150,7 @@ export function RequestForm() {
                   return;
                 }
                 setUploadError((prev) => ({ ...prev, [key]: undefined }));
+              markEdited(key);
                 setFiles((prev) => ({ ...prev, [key]: file ?? undefined }));
               }}
             />

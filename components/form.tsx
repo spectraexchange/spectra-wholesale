@@ -1,6 +1,33 @@
 "use client";
 
+import { useState } from "react";
 import { useFormStatus } from "react-dom";
+
+// Server-side field errors that disappear as soon as the user edits that field.
+// Put `onChange={markEdited}` on the <form>; call markEdited("key") for inputs without a name.
+export function useLiveErrors(serverErrors: Record<string, string | undefined> | undefined) {
+  const [edited, setEdited] = useState<Set<string>>(new Set());
+  const [source, setSource] = useState(serverErrors);
+
+  // A new server result arrives: show all of its errors again.
+  if (serverErrors !== source) {
+    setSource(serverErrors);
+    setEdited(new Set());
+  }
+
+  const errors: Record<string, string | undefined> = {};
+  for (const [key, message] of Object.entries(serverErrors ?? {})) {
+    if (!edited.has(key)) errors[key] = message;
+  }
+
+  const markEdited = (eventOrKey: React.FormEvent<HTMLFormElement> | string) => {
+    const key =
+      typeof eventOrKey === "string" ? eventOrKey : (eventOrKey.target as HTMLInputElement | null)?.name;
+    if (key && serverErrors?.[key] && !edited.has(key)) setEdited((prev) => new Set(prev).add(key));
+  };
+
+  return { errors, markEdited };
+}
 
 const inputClass =
   "block w-full rounded-[3px] border border-line bg-field px-3.5 py-3 text-[15px] text-ink transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-ink-soft/50 hover:border-ink-soft/50 focus:border-sunset focus:bg-field-focus focus:shadow-[0_0_0_3px_rgba(196,70,26,0.18)] focus:outline-none aria-invalid:border-danger";
@@ -70,6 +97,51 @@ export function TextArea({ label, name, hint, error, className = "", ...input }:
         className={`${inputClass} resize-y`}
         {...input}
       />
+      <FieldError id={`${name}-error`} error={error} />
+    </div>
+  );
+}
+
+type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
+  label: string;
+  name: string;
+  options: readonly { value: string; label: string }[];
+  placeholder?: string;
+  error?: string;
+};
+
+export function Select({ label, name, options, placeholder, error, className = "", ...select }: SelectProps) {
+  return (
+    <div className={className}>
+      <div className="mb-2">
+        <Label htmlFor={name}>{label}</Label>
+      </div>
+      <div className="relative">
+        <select
+          id={name}
+          name={name}
+          aria-invalid={error ? true : undefined}
+          className={`${inputClass} cursor-pointer appearance-none pr-10`}
+          {...select}
+        >
+          {placeholder !== undefined && <option value="">{placeholder}</option>}
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <svg
+          viewBox="0 0 12 12"
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 right-3.5 size-3 -translate-y-1/2 text-ink-soft"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path d="M2.5 4.5 6 8l3.5-3.5" />
+        </svg>
+      </div>
       <FieldError id={`${name}-error`} error={error} />
     </div>
   );

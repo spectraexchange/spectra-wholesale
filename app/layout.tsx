@@ -33,6 +33,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${jakarta.variable} ${fraunces.variable} ${jetbrains.variable} h-full antialiased`}
     >
       <head>
+        {/* Must be a raw inline <script> so it runs before first paint. next/script's
+            beforeInteractive defers inline code until after hydration (theme flash).
+            React logs a dev-only "script tag" warning for this; it's expected. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>

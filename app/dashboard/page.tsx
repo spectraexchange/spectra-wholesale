@@ -1,51 +1,23 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { AppShell } from "@/components/app-shell";
+import { getViewer, homeFor } from "@/lib/auth";
 
-// Placeholder until the buyer/seller dashboards exist — confirms sign-in works end to end.
+// Post-login landing: sends each role to its home. Buyers see a placeholder
+// until the buyer side is built.
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const viewer = await getViewer();
+  if (!viewer) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, role, companies(name)")
-    .eq("id", user.id)
-    .single();
-
-  const company = Array.isArray(profile?.companies) ? profile.companies[0] : profile?.companies;
-
-  async function signOut() {
-    "use server";
-    const supabase = await createClient();
-    await supabase.auth.signOut();
-    redirect("/login?message=signed-out");
-  }
+  const home = homeFor(viewer.role);
+  if (home !== "/dashboard") redirect(home);
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-24">
-      <p className="font-mono text-[11px] tracking-[0.2em] text-ink-soft uppercase">Signed in</p>
-      <h1 className="mt-3 font-display text-5xl font-light tracking-tight">
-        {profile?.full_name ?? user.email}
-      </h1>
-      <p className="mt-4 text-ink-soft">
-        {company?.name && <>{company.name} &middot; </>}
-        {user.email} &middot; role: <span className="font-mono text-ink">{profile?.role ?? "none"}</span>
+    <AppShell nav={[]} home="/dashboard" context={viewer.company?.name ?? "Buyer"} userName={viewer.fullName}>
+      <p className="font-mono text-[11px] tracking-[0.2em] text-ink-soft uppercase">{viewer.company?.name}</p>
+      <h1 className="mt-2 font-display text-5xl font-light tracking-tight">Welcome, {viewer.fullName.split(" ")[0]}.</h1>
+      <p className="mt-4 max-w-xl text-ink-soft">
+        Your account is set up. Browsing vendor catalogs and placing orders is coming next.
       </p>
-      {profile?.role === "super_admin" && (
-        <Link href="/admin/access-requests" className="mt-6 inline-block text-sm font-medium text-sunset underline underline-offset-4">
-          Review access requests &rarr;
-        </Link>
-      )}
-      <form action={signOut} className="mt-10">
-        <button
-          type="submit"
-          className="cursor-pointer text-sm font-medium underline decoration-sunset decoration-2 underline-offset-4 hover:text-sunset"
-        >
-          Sign out
-        </button>
-      </form>
-    </main>
+    </AppShell>
   );
 }
