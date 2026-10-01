@@ -11,10 +11,17 @@ The owner approved the auth pages (`app/(auth)/`) as the look for the whole app,
 internal dashboards. New UI should feel like it belongs next to that sign-in panel.
 
 - **Palette** (tokens in `app/globals.css`, use the Tailwind names, not hex):
-  `paper` cream surfaces · `ink` / `ink-soft` text · `line` hairlines · `sunset` primary action
-  (`sunset-hover` on hover) · `teal` accent + offset shadows · `amber` highlights ·
-  `night` deep background · `danger`/`success` (+ `-tint`) for states.
+  `paper` cream surfaces · `ink` / `ink-soft` text · `line` hairlines · `field` / `field-focus` input
+  backgrounds · `sunset` primary action (`sunset-hover`, text on it is `on-sunset`) · `press` hard
+  shadow under buttons · `danger`/`success` (+ `-tint`) for states. Fixed in both themes: `night`
+  (nav + aurora background), `cream` (text on night), `teal`, `amber`.
   Colors come from the script logo (`public/spectra-logo.png`).
+- **Night mode:** every themed token has a light and a dark value; `data-theme` on `<html>` is set
+  before paint by `lib/theme.ts` and switched by `components/theme-toggle.tsx`. Never hardcode
+  `bg-white`, `text-paper`-on-orange, or `var(--ink)` shadows — use the tokens above so both modes
+  work without `dark:` variants. Auth pages pin `data-theme="light"` and always stay cream.
+- **App shell:** cream (or night-mode) content area under a dark `night` navigation bar with
+  `text-cream` links and the theme toggle.
 - **Type:** `font-display` (Fraunces) for headings, light/normal weight · body is Plus Jakarta Sans ·
   `font-mono` (JetBrains Mono) for small uppercase tracked labels (`text-[11px] tracking-[0.16em] uppercase`).
 - **Signature details:** hard offset shadows instead of soft blur (panel: `shadow-[8px_8px_0_0_var(--teal)]`,

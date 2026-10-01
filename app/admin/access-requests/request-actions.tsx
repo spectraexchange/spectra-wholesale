@@ -29,7 +29,7 @@ export function RequestActions({ id, status, company }: { id: string; status: st
               type="button"
               disabled={pending}
               onClick={() => run(approveRequest)}
-              className="cursor-pointer rounded-[3px] bg-sunset px-4 py-2 text-sm font-semibold text-paper shadow-[2px_2px_0_0_var(--ink)] transition-[background-color,transform,box-shadow] duration-100 hover:bg-sunset-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-wait disabled:opacity-60"
+              className="cursor-pointer rounded-[3px] bg-sunset px-4 py-2 text-sm font-semibold text-on-sunset shadow-[2px_2px_0_0_var(--press)] transition-[background-color,transform,box-shadow] duration-100 hover:bg-sunset-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-wait disabled:opacity-60"
             >
               {pending ? "Working…" : "Approve & invite"}
             </button>

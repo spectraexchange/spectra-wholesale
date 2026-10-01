@@ -3,7 +3,8 @@ import { AuroraSky } from "@/components/aurora-sky";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="relative isolate flex min-h-dvh flex-col bg-night lg:flex-row lg:items-center">
+    // Auth pages always use the cream panel, even in night mode.
+    <main data-theme="light" className="relative isolate flex min-h-dvh flex-col bg-night lg:flex-row lg:items-center">
       <AuroraSky className="absolute inset-0 -z-10" />
 
       <div className="flex flex-1 flex-col justify-between gap-10 px-6 pt-8 pb-10 sm:px-10 lg:sticky lg:top-0 lg:h-dvh lg:self-start lg:py-12 lg:pl-16">
@@ -17,12 +18,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         />
 
         <div className="hidden max-w-2xl lg:block">
-          <p className="font-display text-[clamp(2rem,3vw,2.6rem)] leading-[1.12] font-light tracking-tight text-paper [text-shadow:0_2px_24px_rgba(15,30,37,0.55)]">
+          <p className="font-display text-[clamp(2rem,3vw,2.6rem)] leading-[1.12] font-light tracking-tight text-cream [text-shadow:0_2px_24px_rgba(15,30,37,0.55)]">
             Wholesale Cannabis Marketplace.
             <br />
             Built For Alaska.
           </p>
-          <p className="mt-5 font-mono text-[11px] tracking-[0.2em] text-paper/75 uppercase">
+          <p className="mt-5 font-mono text-[11px] tracking-[0.2em] text-cream/75 uppercase">
             Retailers &middot; Cultivators &middot; Processors
           </p>
         </div>

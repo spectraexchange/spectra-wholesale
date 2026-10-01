@@ -1,22 +1,55 @@
 @import "tailwindcss";
 
-/* Palette pulled from the Spectra script logo */
-:root {
-  --paper: #f7efdc;
-  --paper-deep: #efe3c6;
-  --ink: #1b1813;
-  --ink-soft: #5a5246;
-  --line: #d9cba8;
-  --sunset: #c4461a;
+/* Palette pulled from the Spectra script logo.
+   Components only use these tokens, so night mode is just a second set of values.
+   `[data-theme]` lives on <html> (set before paint in app/layout.tsx); a nested
+   `data-theme="light"` (the auth pages) re-scopes its subtree back to light. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7efdc;          /* page + panel surface */
+  --paper-deep: #efe3c6;     /* recessed surface */
+  --ink: #1b1813;            /* primary text */
+  --ink-soft: #5a5246;       /* secondary text */
+  --line: #d9cba8;           /* hairlines, borders */
+  --field: rgb(255 255 255 / 0.7);
+  --field-focus: #ffffff;
+  --sunset: #c4461a;         /* primary action */
   --sunset-hover: #a93a14;
-  --sunset-bright: #e8551c;
-  --amber: #f2a531;
-  --teal: #1f5c66;
-  --night: #030a14;
+  --on-sunset: #f7efdc;      /* text on primary action */
+  --press: #1b1813;          /* hard offset shadow under buttons */
   --danger: #a33a2c;
   --danger-tint: #f6ddd5;
   --success: #3f6b3a;
   --success-tint: #dfe8d3;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0d1621;
+  --paper-deep: #08101a;
+  --ink: #ede4cf;
+  --ink-soft: #9f9786;
+  --line: #243243;
+  --field: rgb(255 255 255 / 0.04);
+  --field-focus: rgb(255 255 255 / 0.07);
+  --sunset: #e5683a;
+  --sunset-hover: #f07d50;
+  --on-sunset: #160f0a;      /* cream on this orange fails contrast */
+  --press: #000000;
+  --danger: #ec8a78;
+  --danger-tint: #3a1c18;
+  --success: #93c283;
+  --success-tint: #16281a;
+}
+
+/* Fixed in both themes */
+:root {
+  --cream: #f7efdc;          /* text on the dark nav / aurora */
+  --night: #030a14;          /* nav + aurora background */
+  --teal: #1f5c66;
+  --amber: #f2a531;
+  --sunset-bright: #e8551c;
 }
 
 @theme inline {
@@ -25,9 +58,14 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-line: var(--line);
+  --color-field: var(--field);
+  --color-field-focus: var(--field-focus);
   --color-sunset: var(--sunset);
   --color-sunset-hover: var(--sunset-hover);
+  --color-on-sunset: var(--on-sunset);
+  --color-press: var(--press);
   --color-sunset-bright: var(--sunset-bright);
+  --color-cream: var(--cream);
   --color-amber: var(--amber);
   --color-teal: var(--teal);
   --color-night: var(--night);

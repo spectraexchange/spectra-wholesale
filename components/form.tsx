@@ -3,7 +3,7 @@
 import { useFormStatus } from "react-dom";
 
 const inputClass =
-  "block w-full rounded-[3px] border border-line bg-white/70 px-3.5 py-3 text-[15px] text-ink transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-ink-soft/50 hover:border-ink-soft/50 focus:border-sunset focus:bg-white focus:shadow-[0_0_0_3px_rgba(196,70,26,0.18)] focus:outline-none aria-invalid:border-danger";
+  "block w-full rounded-[3px] border border-line bg-field px-3.5 py-3 text-[15px] text-ink transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-ink-soft/50 hover:border-ink-soft/50 focus:border-sunset focus:bg-field-focus focus:shadow-[0_0_0_3px_rgba(196,70,26,0.18)] focus:outline-none aria-invalid:border-danger";
 
 export function Label({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
@@ -93,11 +93,11 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className="group relative flex w-full cursor-pointer items-center justify-center gap-2 rounded-[3px] bg-sunset px-5 py-3.5 text-[15px] font-semibold text-paper shadow-[3px_3px_0_0_var(--ink)] transition-[background-color,transform,box-shadow] duration-100 hover:bg-sunset-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sunset disabled:cursor-wait disabled:opacity-80"
+      className="group relative flex w-full cursor-pointer items-center justify-center gap-2 rounded-[3px] bg-sunset px-5 py-3.5 text-[15px] font-semibold text-on-sunset shadow-[3px_3px_0_0_var(--press)] transition-[background-color,transform,box-shadow] duration-100 hover:bg-sunset-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sunset disabled:cursor-wait disabled:opacity-80"
     >
       {pending ? (
         <>
-          <span className="size-4 animate-spin rounded-full border-2 border-paper/40 border-t-paper" />
+          <span className="size-4 animate-spin rounded-full border-2 border-on-sunset/40 border-t-on-sunset" />
           {pendingLabel}
         </>
       ) : (

@@ -77,7 +77,7 @@ export function RequestForm() {
           {ACCOUNT_TYPES.map((type) => (
             <label
               key={type.value}
-              className="cursor-pointer rounded-[3px] border border-line bg-white/50 px-4 py-3 transition-colors hover:border-ink-soft/50 has-checked:border-sunset has-checked:bg-white has-checked:shadow-[inset_0_0_0_1px_var(--sunset)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sunset"
+              className="cursor-pointer rounded-[3px] border border-line bg-field px-4 py-3 transition-colors hover:border-ink-soft/50 has-checked:border-sunset has-checked:bg-field-focus has-checked:shadow-[inset_0_0_0_1px_var(--sunset)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sunset"
             >
               <input
                 type="radio"
@@ -179,8 +179,8 @@ function FilePicker({
     <div>
       <Label htmlFor={id}>{label}</Label>
       <label
-        className={`group mt-2 flex cursor-pointer items-center justify-between gap-3 rounded-[3px] border border-dashed px-3.5 py-3 text-[14px] transition-colors hover:border-sunset hover:bg-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sunset ${
-          error ? "border-danger" : file ? "border-solid border-success bg-white/60" : "border-ink-soft/40 bg-white/40"
+        className={`group mt-2 flex cursor-pointer items-center justify-between gap-3 rounded-[3px] border border-dashed px-3.5 py-3 text-[14px] transition-colors hover:border-sunset hover:bg-field-focus has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sunset ${
+          error ? "border-danger" : file ? "border-solid border-success bg-field-focus" : "border-ink-soft/40 bg-field"
         }`}
       >
         <input
