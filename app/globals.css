@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
+/* Palette pulled from the Spectra script logo */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f7efdc;
+  --paper-deep: #efe3c6;
+  --ink: #1b1813;
+  --ink-soft: #5a5246;
+  --line: #d9cba8;
+  --sunset: #c4461a;
+  --sunset-hover: #a93a14;
+  --sunset-bright: #e8551c;
+  --amber: #f2a531;
+  --teal: #1f5c66;
+  --night: #0f1e25;
+  --danger: #a33a2c;
+  --danger-tint: #f6ddd5;
+  --success: #3f6b3a;
+  --success-tint: #dfe8d3;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-sunset: var(--sunset);
+  --color-sunset-hover: var(--sunset-hover);
+  --color-sunset-bright: var(--sunset-bright);
+  --color-amber: var(--amber);
+  --color-teal: var(--teal);
+  --color-night: var(--night);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-success: var(--success);
+  --color-success-tint: var(--success-tint);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-jetbrains);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--amber);
+  color: var(--ink);
 }

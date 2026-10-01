@@ -1,0 +1,68 @@
+"use client";
+
+import { useFormStatus } from "react-dom";
+
+type FieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  label: string;
+  name: string;
+  hint?: React.ReactNode;
+};
+
+export function Field({ label, name, hint, ...input }: FieldProps) {
+  return (
+    <div>
+      <div className="mb-2 flex items-baseline justify-between">
+        <label htmlFor={name} className="font-mono text-[11px] tracking-[0.16em] text-ink-soft uppercase">
+          {label}
+        </label>
+        {hint}
+      </div>
+      <input
+        id={name}
+        name={name}
+        className="block w-full rounded-[3px] border border-line bg-white/70 px-3.5 py-3 text-[15px] text-ink transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-ink-soft/50 hover:border-ink-soft/50 focus:border-sunset focus:bg-white focus:shadow-[0_0_0_3px_rgba(196,70,26,0.18)] focus:outline-none"
+        {...input}
+      />
+    </div>
+  );
+}
+
+// Retro offset shadow (echoes the logo's teal drop shadow) that presses flat on click.
+export function SubmitButton({ children, pendingLabel }: { children: React.ReactNode; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="group relative flex w-full cursor-pointer items-center justify-center gap-2 rounded-[3px] bg-sunset px-5 py-3.5 text-[15px] font-semibold text-paper shadow-[3px_3px_0_0_var(--ink)] transition-[background-color,transform,box-shadow] duration-100 hover:bg-sunset-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sunset disabled:cursor-wait disabled:opacity-80"
+    >
+      {pending ? (
+        <>
+          <span className="size-4 animate-spin rounded-full border-2 border-paper/40 border-t-paper" />
+          {pendingLabel}
+        </>
+      ) : (
+        <>
+          {children}
+          <span aria-hidden className="transition-transform duration-150 group-hover:translate-x-1">
+            &rarr;
+          </span>
+        </>
+      )}
+    </button>
+  );
+}
+
+export function Notice({ tone, children }: { tone: "error" | "success"; children: React.ReactNode }) {
+  const styles =
+    tone === "error"
+      ? "border-danger bg-danger-tint text-danger"
+      : "border-success bg-success-tint text-success";
+
+  return (
+    <p role={tone === "error" ? "alert" : "status"} className={`border-l-[3px] px-3.5 py-2.5 text-sm ${styles}`}>
+      {children}
+    </p>
+  );
+}
