@@ -12,7 +12,7 @@
   --sunset-bright: #e8551c;
   --amber: #f2a531;
   --teal: #1f5c66;
-  --night: #0f1e25;
+  --night: #030a14;
   --danger: #a33a2c;
   --danger-tint: #f6ddd5;
   --success: #3f6b3a;
@@ -49,4 +49,39 @@ body {
 ::selection {
   background: var(--amber);
   color: var(--ink);
+}
+
+/* Aurora sky (components/aurora-sky.tsx) */
+@keyframes aurora-a {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  33% { transform: translate(5%, -8%) scale(1.1); opacity: 0.5; }
+  66% { transform: translate(-4%, 6%) scale(0.95); opacity: 0.8; }
+}
+@keyframes aurora-b {
+  0%, 100% { transform: translate(0, 0) scale(1.05); opacity: 0.6; }
+  33% { transform: translate(-6%, 5%) scale(0.95); opacity: 0.8; }
+  66% { transform: translate(8%, -4%) scale(1.1); opacity: 0.5; }
+}
+@keyframes aurora-c {
+  0%, 100% { transform: translate(0, 0) scale(1.1); opacity: 0.5; }
+  50% { transform: translate(6%, 8%) scale(0.95); opacity: 0.3; }
+}
+@keyframes twinkle-a {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.9; }
+}
+@keyframes twinkle-b {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.1; }
+}
+@keyframes twinkle-c {
+  0%, 100% { opacity: 0.4; }
+  30% { opacity: 0.9; }
+  70% { opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-sky * {
+    animation: none !important;
+  }
 }

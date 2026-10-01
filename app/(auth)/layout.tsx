@@ -1,12 +1,10 @@
 import Image from "next/image";
-import { MidnightSunScene } from "@/components/midnight-sun-scene";
+import { AuroraSky } from "@/components/aurora-sky";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <main className="relative isolate flex min-h-dvh flex-col bg-night lg:flex-row lg:items-center">
-      <MidnightSunScene className="absolute inset-0 -z-20 h-full w-full" />
-      {/* Darkens the foreground so the tagline reads cleanly */}
-      <div className="absolute inset-x-0 bottom-0 -z-10 h-[55%] bg-gradient-to-t from-night via-night/60 to-transparent" />
+      <AuroraSky className="absolute inset-0 -z-10" />
 
       <div className="flex flex-1 flex-col justify-between gap-10 px-6 pt-8 pb-10 sm:px-10 lg:min-h-dvh lg:py-12 lg:pl-16">
         <Image
