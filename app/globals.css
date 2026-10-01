@@ -78,6 +78,12 @@
   --font-mono: var(--font-jetbrains);
 }
 
+/* Inherited text color is computed where it's declared, so every themed scope
+   must re-declare it — otherwise a light panel inside a dark page inherits cream text. */
+[data-theme] {
+  color: var(--ink);
+}
+
 body {
   background: var(--paper);
   color: var(--ink);
