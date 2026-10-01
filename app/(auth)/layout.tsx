@@ -16,9 +16,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           className="h-auto w-44 drop-shadow-[0_6px_18px_rgba(0,0,0,0.35)] sm:w-56"
         />
 
-        <div className="hidden max-w-md lg:block">
-          <p className="font-display text-[2.6rem] leading-[1.08] font-light tracking-tight text-paper [text-shadow:0_2px_24px_rgba(15,30,37,0.55)]">
-            Alaska&rsquo;s licensed cannabis wholesale marketplace.
+        <div className="hidden max-w-2xl lg:block">
+          <p className="font-display text-[clamp(2rem,3vw,2.6rem)] leading-[1.12] font-light tracking-tight text-paper [text-shadow:0_2px_24px_rgba(15,30,37,0.55)]">
+            Wholesale Cannabis Marketplace.
+            <br />
+            Built For Alaska.
           </p>
           <p className="mt-5 font-mono text-[11px] tracking-[0.2em] text-paper/75 uppercase">
             Retailers &middot; Cultivators &middot; Processors
