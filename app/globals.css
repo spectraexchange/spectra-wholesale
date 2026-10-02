@@ -96,6 +96,21 @@ body {
   font-family: var(--font-jakarta), system-ui, sans-serif;
 }
 
+/* Invoices print on plain paper with the browser's own margins */
+@page {
+  margin: 12mm;
+}
+/* Paper is light even when the app is in night mode */
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  html,
+  body {
+    background: #ffffff;
+  }
+}
+
 ::selection {
   background: var(--amber);
   color: var(--ink);

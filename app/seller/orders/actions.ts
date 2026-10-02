@@ -78,3 +78,19 @@ export async function setPaymentStatus(orderId: string, paid: boolean): Promise<
   refresh(orderId);
   return { ok: paid ? "Marked paid." : "Marked unpaid." };
 }
+
+export async function setDiscount(orderId: string, percent: number): Promise<OrderActionResult> {
+  const order = await ownOrder(orderId);
+  if (!order) return { error: "Order not found." };
+  if (order.status === "cancelled") return { error: "This order is cancelled." };
+  if (!Number.isFinite(percent) || percent < 0 || percent > 100) return { error: "Enter a discount from 0 to 100%." };
+
+  const { error } = await createServiceClient()
+    .from("orders")
+    .update({ discount_percent: Math.round(percent * 100) / 100, updated_at: new Date().toISOString() })
+    .eq("id", orderId);
+  if (error) return { error: error.code === "42703" ? "Run the invoices migration first." : "Couldn’t save the discount." };
+
+  refresh(orderId);
+  return { ok: percent ? `${percent}% discount applied.` : "Discount removed." };
+}

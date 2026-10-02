@@ -30,7 +30,12 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
             <Link href={`/admin/companies/${order.seller.id}`} className="hover:text-sunset">{order.seller.name}</Link>
           </h1>
         </div>
-        <StatusLabel status={order.status} />
+        <div className="flex items-baseline gap-6">
+          <Link href={`/admin/orders/${order.id}/invoice`} className="text-[14px] underline decoration-sunset underline-offset-4 hover:text-sunset">
+            View invoice
+          </Link>
+          <StatusLabel status={order.status} />
+        </div>
       </div>
       <div className="mt-12">
         <OrderSummary order={order} side="admin" />

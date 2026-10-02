@@ -48,7 +48,7 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
   const { data: signed } = docPaths.length ? await service.storage.from(LICENSE_BUCKET).createSignedUrls(docPaths, 60 * 10) : { data: [] };
   const urlFor = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
   const live = (products ?? []).filter((p) => p.is_active && !p.is_archived);
-  const sales = ((orders ?? []) as OrderWithParties[]).filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.subtotal), 0);
+  const sales = ((orders ?? []) as OrderWithParties[]).filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.total), 0);
   const status = subscription?.status;
 
   return (

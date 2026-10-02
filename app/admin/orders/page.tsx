@@ -25,7 +25,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
   const all = (data ?? []) as OrderWithParties[];
   const inView = (v: View, o: OrderWithParties) => (VIEWS[v].statuses as readonly string[]).includes(o.status);
   const orders = all.filter((o) => inView(view, o));
-  const total = orders.filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.subtotal), 0);
+  const total = orders.filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.total), 0);
 
   return (
     <>

@@ -8,7 +8,8 @@ export type AuditAction =
   | "view_as_end"
   | "subscription_update"
   | "payment_recorded"
-  | "payment_deleted";
+  | "payment_deleted"
+  | "invoice_template_update";
 
 // Best effort: an admin action never fails because logging did.
 export async function audit(entry: {
@@ -39,4 +40,5 @@ export const AUDIT_LABELS: Record<string, string> = {
   subscription_update: "Updated subscription",
   payment_recorded: "Recorded a payment",
   payment_deleted: "Deleted a payment",
+  invoice_template_update: "Switched the invoice design",
 };

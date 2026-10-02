@@ -27,7 +27,9 @@ export type Order = {
   status: OrderStatus;
   notes: string | null;
   subtotal: number;
+  discount_percent: number;
   shipping_cost: number;
+  total: number; // generated: subtotal less discount, plus shipping
   delivery_date: string | null;
   payment_status: "unpaid" | "paid";
   payment_date: string | null;
@@ -47,6 +49,10 @@ export type OrderItem = {
   price_per_unit: number;
   line_total: number;
 };
+
+// Dollar amount taken off by the order's discount (matches the generated `total`).
+export const discountAmount = (o: Pick<Order, "subtotal" | "discount_percent">) =>
+  Math.round(Number(o.subtotal) * Number(o.discount_percent)) / 100;
 
 const AK = "America/Anchorage";
 const dateTime = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: AK });

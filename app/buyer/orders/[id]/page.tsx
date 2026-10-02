@@ -41,7 +41,12 @@ export default async function BuyerOrderPage({ params, searchParams }: PageProps
           <p className="font-mono text-[13px] text-ink-soft">{order.order_number}</p>
           <h1 className="mt-1 font-display text-5xl font-light tracking-tight">{order.seller.name}</h1>
         </div>
-        <StatusLabel status={order.status} />
+        <div className="flex items-baseline gap-6">
+          <Link href={`/buyer/orders/${order.id}/invoice`} className="text-[14px] underline decoration-sunset underline-offset-4 hover:text-sunset">
+            View invoice
+          </Link>
+          <StatusLabel status={order.status} />
+        </div>
       </div>
 
       <div className="mt-12">

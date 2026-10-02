@@ -26,7 +26,7 @@ export default async function AdminCompaniesPage({ searchParams }: PageProps<"/a
     service.from("companies").select("id, name, type, city, license_number, is_active, created_at").order("name"),
     service.from("profiles").select("company_id"),
     service.from("products").select("seller_company_id").eq("is_archived", false),
-    service.from("orders").select("buyer_company_id, seller_company_id, subtotal, status"),
+    service.from("orders").select("buyer_company_id, seller_company_id, total, status"),
   ]);
 
   const tally = (rows: { [k: string]: unknown }[] | null, key: string) => {
@@ -41,7 +41,7 @@ export default async function AdminCompaniesPage({ searchParams }: PageProps<"/a
     if (o.status === "cancelled") continue;
     for (const id of [o.buyer_company_id, o.seller_company_id]) {
       const v = volume.get(id) ?? { count: 0, total: 0 };
-      volume.set(id, { count: v.count + 1, total: v.total + Number(o.subtotal) });
+      volume.set(id, { count: v.count + 1, total: v.total + Number(o.total) });
     }
   }
 

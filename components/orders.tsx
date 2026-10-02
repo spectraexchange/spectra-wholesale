@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatMoney, formatQty } from "@/lib/catalog";
-import { ORDER_STATUSES, formatDeliveryDate, formatPlaced, type Order, type OrderItem } from "@/lib/orders";
+import { ORDER_STATUSES, discountAmount, formatDeliveryDate, formatPlaced, type Order, type OrderItem } from "@/lib/orders";
 
 export type OrderWithParties = Order & {
   items: OrderItem[];
@@ -50,7 +50,7 @@ export function OrderList({
             <span className="text-right sm:text-left">
               <StatusLabel status={o.status} />
             </span>
-            <span className="row-start-2 text-right font-mono sm:row-start-auto">{formatMoney(o.subtotal)}</span>
+            <span className="row-start-2 text-right font-mono sm:row-start-auto">{formatMoney(o.total)}</span>
           </Link>
         </li>
       ))}
@@ -81,9 +81,21 @@ export function OrderSummary({ order, side }: { order: OrderWithParties; side: "
             </li>
           ))}
         </ul>
+        {Number(order.discount_percent) > 0 && (
+          <div className="space-y-1 border-t border-line pt-3 pb-3 text-[14px]">
+            <p className="flex justify-between">
+              <span className="text-ink-soft">Subtotal</span>
+              <span className="font-mono">{formatMoney(order.subtotal)}</span>
+            </p>
+            <p className="flex justify-between">
+              <span className="text-ink-soft">Discount ({Number(order.discount_percent)}%)</span>
+              <span className="font-mono">&minus;{formatMoney(discountAmount(order))}</span>
+            </p>
+          </div>
+        )}
         <div className="flex items-baseline justify-between border-t border-ink pt-4">
           <p className="font-medium">Total</p>
-          <p className="font-mono text-2xl">{formatMoney(order.subtotal)}</p>
+          <p className="font-mono text-2xl">{formatMoney(order.total)}</p>
         </div>
 
         {order.notes && (

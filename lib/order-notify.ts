@@ -31,7 +31,7 @@ export async function notifyOrderPlaced(orderId: string) {
   const order = await loadOrder(orderId);
   if (!order) return;
   const base = await origin();
-  const total = formatMoney(order.subtotal);
+  const total = formatMoney(order.total);
   const lines = emailLines(order.items);
 
   await Promise.allSettled([
@@ -82,7 +82,7 @@ export async function notifyOrderStatus(orderId: string) {
       vendor: order.seller.name,
       deliveryDate: order.delivery_date ? formatDeliveryDate(order.delivery_date) : null,
       lines: emailLines(order.items),
-      total: formatMoney(order.subtotal),
+      total: formatMoney(order.total),
       link: `${await origin()}/buyer/orders/${order.id}`,
     }),
   }).catch(() => undefined);

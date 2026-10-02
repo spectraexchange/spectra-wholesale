@@ -32,7 +32,7 @@ export async function AppShell({
   return (
     <div className="flex min-h-dvh flex-col">
       {/* Banner + nav stick together so the banner can wrap on small screens */}
-      <div className="sticky top-0 z-20">
+      <div className="sticky top-0 z-20 print:hidden">
         {viewAs && (
           <div role="status" className="bg-amber text-[#1b1813]">
             <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 text-[13px]">
@@ -77,7 +77,7 @@ export async function AppShell({
         </header>
       </div>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 sm:py-12">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 sm:py-12 print:max-w-none print:p-0">{children}</main>
     </div>
   );
 }

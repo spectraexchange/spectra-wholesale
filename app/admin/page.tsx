@@ -34,7 +34,7 @@ export default async function AdminOverviewPage() {
       .eq("is_active", true)
       .eq("is_archived", false)
       .eq("vendor.is_active", true),
-    service.from("orders").select("subtotal, status").gte("created_at", month.iso),
+    service.from("orders").select("total, status").gte("created_at", month.iso),
     service.from("orders").select("status").in("status", ["pending", "confirmed", "shipped"]),
     service.from("orders").select(ORDER_SELECT).order("created_at", { ascending: false }).limit(8),
   ]);
@@ -43,7 +43,7 @@ export default async function AdminOverviewPage() {
   const buyers = all.filter((c) => c.type === "buyer" && c.is_active).length;
   const vendors = all.filter((c) => c.type === "seller" && c.is_active).length;
   const placed = (monthOrders.data ?? []).filter((o) => o.status !== "cancelled");
-  const sales = placed.reduce((sum, o) => sum + Number(o.subtotal), 0);
+  const sales = placed.reduce((sum, o) => sum + Number(o.total), 0);
   const awaiting = (openOrders.data ?? []).filter((o) => o.status === "pending").length;
 
   const stats: { label: string; value: string; detail?: string; href: string; alert?: boolean }[] = [

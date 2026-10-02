@@ -1,3 +1,4 @@
+import { InvoiceSettingsForm } from "@/app/seller/account/invoice-settings-form";
 import { CompanyForm, PasswordForm, ProfileForm } from "@/components/account-forms";
 import { LICENSE_BUCKET, LICENSE_DOCS, type LicenseDocKey } from "@/lib/access-requests";
 import type { Viewer } from "@/lib/auth";
@@ -83,6 +84,31 @@ export async function AccountPage({ viewer }: { viewer: Viewer & { company: NonN
               </dl>
             )}
           </Section>
+
+          {!isBuyer && (
+            <Section
+              title="Invoice"
+              note={isAdmin ? "Printed on every invoice buyers see from you." : "Only your company’s admin can change these."}
+            >
+              {isAdmin ? (
+                <InvoiceSettingsForm
+                  settings={{
+                    logo_url: company?.logo_url ?? "",
+                    invoice_payable_to: company?.invoice_payable_to ?? "",
+                    invoice_terms: company?.invoice_terms ?? "",
+                    invoice_turnaround: company?.invoice_turnaround ?? "",
+                    invoice_payment_terms: company?.invoice_payment_terms ?? "",
+                  }}
+                />
+              ) : (
+                <dl className="divide-y divide-line border-y border-line">
+                  <Row label="Turnaround">{company?.invoice_turnaround}</Row>
+                  <Row label="Terms">{company?.invoice_payment_terms}</Row>
+                  <Row label="Payment">{company?.invoice_payable_to}</Row>
+                </dl>
+              )}
+            </Section>
+          )}
 
           <Section title="Password">
             <PasswordForm />

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { NEXT_STATUS, type OrderStatus } from "@/lib/orders";
-import { setDeliveryDate, setPaymentStatus, updateOrderStatus, type OrderActionResult } from "./actions";
+import { setDeliveryDate, setDiscount, setPaymentStatus, updateOrderStatus, type OrderActionResult } from "./actions";
 
 const PRIMARY =
   "cursor-pointer rounded-[3px] bg-sunset px-5 py-3 text-[15px] font-semibold text-on-sunset shadow-[3px_3px_0_0_var(--press)] transition-[background-color,transform,box-shadow] duration-100 hover:bg-sunset-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-wait disabled:opacity-60";
@@ -20,13 +20,16 @@ export function OrderActions({
   status,
   deliveryDate,
   paid,
+  discountPercent,
 }: {
   orderId: string;
   status: OrderStatus;
   deliveryDate: string | null;
   paid: boolean;
+  discountPercent: number;
 }) {
   const [date, setDate] = useState(deliveryDate ?? "");
+  const [discount, setDiscountInput] = useState(discountPercent ? String(discountPercent) : "");
   const [result, setResult] = useState<OrderActionResult>({});
   const [pending, startTransition] = useTransition();
   const run = (fn: () => Promise<OrderActionResult>) => startTransition(async () => setResult(await fn()));
@@ -75,6 +78,37 @@ export function OrderActions({
             </button>
           ))}
           {status === "pending" && !date && <p className="text-[12px] text-ink-soft">Pick a delivery date to confirm.</p>}
+        </div>
+      )}
+
+      {status !== "cancelled" && (
+        <div className="border-t border-line pt-5">
+          <label htmlFor="discount" className="font-mono text-[11px] tracking-[0.16em] text-ink-soft uppercase">
+            Discount
+          </label>
+          <div className="mt-2 flex gap-2">
+            <div className="relative w-full">
+              <input
+                id="discount"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={100}
+                step="0.5"
+                placeholder="0"
+                value={discount}
+                onChange={(e) => setDiscountInput(e.target.value)}
+                className="w-full rounded-[3px] border border-line bg-field py-2.5 pr-8 pl-3 text-[15px] focus:border-sunset focus:outline-none"
+              />
+              <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-ink-soft">%</span>
+            </div>
+            {Number(discount || 0) !== Number(discountPercent) && (
+              <button type="button" disabled={pending} onClick={() => run(() => setDiscount(orderId, Number(discount || 0)))} className={SECONDARY}>
+                Apply
+              </button>
+            )}
+          </div>
+          <p className="mt-1.5 text-[12px] text-ink-soft">Taken off the order total and shown on the invoice.</p>
         </div>
       )}
 
