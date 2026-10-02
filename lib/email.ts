@@ -129,3 +129,12 @@ export function orderUpdateEmail(opts: {
     <p style="margin:0;">${button(opts.link, "View order")}</p>
   `);
 }
+
+export function passwordResetEmail(opts: { firstName: string; link: string }) {
+  return layout(`
+    <h1 style="margin:0 0 12px;font-family:Georgia,serif;font-weight:normal;font-size:26px;">Reset your password</h1>
+    <p style="margin:0 0 12px;">Hi ${escapeHtml(opts.firstName)}, Spectra support sent you a link to choose a new password.</p>
+    <p style="margin:0 0 28px;">${button(opts.link, "Choose a new password")}</p>
+    <p style="margin:0;font-size:13px;color:#5a5246;">This link expires in 24 hours. If you didn&rsquo;t expect this, you can ignore it and your password stays the same.</p>
+  `);
+}

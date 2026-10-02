@@ -102,6 +102,8 @@ export async function approveRequest(requestId: string): Promise<ActionResult> {
   }
 
   await service.from("access_requests").update({ company_id: company.id }).eq("id", requestId);
+  // Every new company starts on a trial subscription (price and dates set later in Billing)
+  await service.from("vendor_billing").insert({ company_id: company.id, plan: "standard", status: "trial" }).then(() => undefined, () => undefined);
   revalidatePath("/admin/access-requests");
 
   // 4. Invite email. The account exists either way; a failure here can be retried.

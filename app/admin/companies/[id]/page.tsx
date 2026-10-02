@@ -3,14 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ORDER_SELECT, OrderList, type OrderWithParties } from "@/components/orders";
 import { LICENSE_BUCKET, LICENSE_DOCS, type LicenseDocKey } from "@/lib/access-requests";
+import { AUDIT_LABELS } from "@/lib/audit";
+import { SUBSCRIPTION_STATUSES, alaskaToday, formatDate, type Payment, type Subscription } from "@/lib/billing";
 import { categoryLabel, formatMoney, unitLabel } from "@/lib/catalog";
 import { createServiceClient } from "@/lib/supabase/server";
-import { IdentityForm, PauseControl } from "./company-controls";
+import { CompanyDetailsForm, DeletePaymentButton, PaymentForm, SubscriptionForm, UserRow } from "./company-controls";
 
 export const metadata: Metadata = { title: "Company · Spectra Admin" };
 
-const ROLE_LABELS: Record<string, string> = { buyer_admin: "Admin", seller_admin: "Admin", buyer: "Member", seller: "Member" };
-const joined = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Anchorage" });
+const dateTime = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Anchorage" });
+const dateOnly = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Anchorage" });
 
 export default async function AdminCompanyPage({ params }: PageProps<"/admin/companies/[id]">) {
   const { id } = await params;
@@ -20,31 +22,31 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
   if (!company) notFound();
   const isVendor = company.type === "seller";
 
-  const [{ data: team }, { data: products }, { data: orders }, { data: authUsers }] = await Promise.all([
-    service.from("profiles").select("id, full_name, email, phone, role").eq("company_id", id).order("full_name"),
-    isVendor
-      ? service.from("products").select("id, name, category, price_per_unit, unit, stock_qty, is_active, is_archived").eq("seller_company_id", id).order("name")
-      : Promise.resolve({ data: [] as never[] }),
-    service
-      .from("orders")
-      .select(ORDER_SELECT)
-      .or(`buyer_company_id.eq.${id},seller_company_id.eq.${id}`)
-      .order("created_at", { ascending: false })
-      .limit(20),
-    service.auth.admin.listUsers({ perPage: 1000 }),
-  ]);
+  const [{ data: team }, { data: products }, { data: orders }, { data: authUsers }, { data: sub }, { data: payments }, { data: activity }] =
+    await Promise.all([
+      service.from("profiles").select("id, first_name, last_name, full_name, email, phone, role").eq("company_id", id).order("full_name"),
+      isVendor
+        ? service.from("products").select("id, name, category, price_per_unit, unit, stock_qty, is_active, is_archived").eq("seller_company_id", id).order("name")
+        : Promise.resolve({ data: [] as never[] }),
+      service.from("orders").select(ORDER_SELECT).or(`buyer_company_id.eq.${id},seller_company_id.eq.${id}`).order("created_at", { ascending: false }).limit(20),
+      service.auth.admin.listUsers({ perPage: 1000 }),
+      service.from("vendor_billing").select("*").eq("company_id", id).maybeSingle(),
+      service.from("billing_payments").select("*").eq("company_id", id).order("date", { ascending: false }),
+      service.from("admin_audit_log").select("action, details, created_at, user_id").eq("company_id", id).order("created_at", { ascending: false }).limit(15),
+    ]);
 
   const lastSignIn = new Map((authUsers?.users ?? []).map((u) => [u.id, u.last_sign_in_at]));
+  const subscription = sub as Subscription | null;
+  const paid = (payments ?? []) as Payment[];
+  const collected = paid.reduce((s, p) => s + Number(p.amount), 0);
+  const today = alaskaToday();
 
   const docPaths = (Object.keys(LICENSE_DOCS) as LicenseDocKey[]).map((k) => company[k]).filter(Boolean) as string[];
-  const { data: signed } = docPaths.length
-    ? await service.storage.from(LICENSE_BUCKET).createSignedUrls(docPaths, 60 * 10)
-    : { data: [] };
+  const { data: signed } = docPaths.length ? await service.storage.from(LICENSE_BUCKET).createSignedUrls(docPaths, 60 * 10) : { data: [] };
   const urlFor = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
-
-  const address = [company.address, [company.city, company.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
   const live = (products ?? []).filter((p) => p.is_active && !p.is_archived);
-  const total = ((orders ?? []) as OrderWithParties[]).filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.subtotal), 0);
+  const sales = ((orders ?? []) as OrderWithParties[]).filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.subtotal), 0);
+  const status = subscription?.status;
 
   return (
     <>
@@ -52,64 +54,65 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
         &larr; Companies
       </Link>
       <p className="mt-6 font-mono text-[11px] tracking-[0.2em] text-ink-soft uppercase">
-        {isVendor ? "Vendor" : "Buyer"} &middot; joined {joined.format(new Date(company.created_at))}
-        {!company.is_active && <span className="text-danger"> &middot; paused</span>}
+        {isVendor ? "Vendor" : "Buyer"} &middot; joined {dateOnly.format(new Date(company.created_at))}
+        {status && <span className={SUBSCRIPTION_STATUSES[status].tone}> &middot; {SUBSCRIPTION_STATUSES[status].label}</span>}
       </p>
       <h1 className="mt-2 font-display text-5xl font-light tracking-tight">{company.name}</h1>
 
-      <div className="mt-12 grid gap-16 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="mt-12 grid gap-16 lg:grid-cols-[minmax(0,1fr)_21rem]">
         <div className="space-y-16">
-          <Section title="Details">
-            <dl className="divide-y divide-line border-y border-line">
-              <Row label="Phone">{company.phone}</Row>
-              <Row label="Order email">
-                {company.email && (
-                  <a href={`mailto:${company.email}`} className="underline decoration-line underline-offset-4 hover:text-sunset">
-                    {company.email}
+          <Section title="Company" note="You can edit everything here, including the business name and license the company sees as locked.">
+            <CompanyDetailsForm
+              id={company.id}
+              isBuyer={!isVendor}
+              company={{
+                name: company.name ?? "",
+                license_number: company.license_number ?? "",
+                phone: company.phone ?? "",
+                email: company.email ?? "",
+                address: company.address ?? "",
+                city: company.city ?? "",
+                zip: company.zip ?? "",
+                receiving_hours: company.receiving_hours ?? "",
+                delivery_instructions: company.delivery_instructions ?? "",
+              }}
+            />
+            <p className="mt-6 text-[14px]">
+              <span className="font-mono text-[11px] tracking-[0.14em] text-ink-soft uppercase">Documents </span>
+              {(Object.entries(LICENSE_DOCS) as [LicenseDocKey, string][]).map(([key, label]) => {
+                const href = company[key] && urlFor.get(company[key]);
+                return href ? (
+                  <a key={key} href={href} target="_blank" rel="noreferrer" className="mr-4 text-sunset underline underline-offset-4 hover:text-sunset-hover">
+                    {label} &#8599;
                   </a>
-                )}
-              </Row>
-              <Row label="Address">{address}</Row>
-              {!isVendor && <Row label="Receiving">{company.receiving_hours}</Row>}
-              {!isVendor && <Row label="Instructions">{company.delivery_instructions}</Row>}
-              <Row label="Documents">
-                <span className="flex flex-wrap gap-x-4 gap-y-1">
-                  {(Object.entries(LICENSE_DOCS) as [LicenseDocKey, string][]).map(([key, label]) => {
-                    const href = company[key] && urlFor.get(company[key]);
-                    return href ? (
-                      <a key={key} href={href} target="_blank" rel="noreferrer" className="text-sunset underline underline-offset-4 hover:text-sunset-hover">
-                        {label} &#8599;
-                      </a>
-                    ) : (
-                      <span key={key} className="text-ink-soft">{label}: none</span>
-                    );
-                  })}
-                </span>
-              </Row>
-            </dl>
-          </Section>
-
-          <Section title="Team">
-            <ul className="divide-y divide-line border-y border-line">
-              {(team ?? []).map((m) => {
-                const seen = lastSignIn.get(m.id);
-                return (
-                  <li key={m.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate">{m.full_name ?? m.email}</p>
-                      <p className="truncate text-[13px] text-ink-soft">
-                        <a href={`mailto:${m.email}`} className="hover:text-sunset">{m.email}</a>
-                        {m.phone && ` · ${m.phone}`}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-[10px] tracking-[0.14em] text-ink-soft uppercase">{ROLE_LABELS[m.role] ?? m.role}</p>
-                      <p className="text-[12px] text-ink-soft">{seen ? `Last in ${joined.format(new Date(seen))}` : "Hasn’t signed in"}</p>
-                    </div>
-                  </li>
+                ) : (
+                  <span key={key} className="mr-4 text-ink-soft">{label}: none</span>
                 );
               })}
-              {!team?.length && <li className="py-3 text-ink-soft">No users.</li>}
+            </p>
+          </Section>
+
+          <Section title="Users" note="Change names, login emails and who's the admin, send a password reset, or view the app as them.">
+            <ul className="divide-y divide-line border-y border-line">
+              {(team ?? []).map((m) => {
+                const [first, ...rest] = (m.full_name ?? "").split(" ");
+                const seen = lastSignIn.get(m.id);
+                return (
+                  <UserRow
+                    key={m.id}
+                    lastSeen={seen ? `last in ${dateOnly.format(new Date(seen))}` : "hasn’t signed in"}
+                    user={{
+                      id: m.id,
+                      first_name: m.first_name ?? first ?? "",
+                      last_name: m.last_name ?? rest.join(" "),
+                      phone: m.phone ?? "",
+                      email: m.email,
+                      isAdmin: m.role.endsWith("_admin"),
+                    }}
+                  />
+                );
+              })}
+              {!team?.length && <li className="py-4 text-ink-soft">No users.</li>}
             </ul>
           </Section>
 
@@ -138,23 +141,79 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
             </Section>
           )}
 
-          <Section title={`Orders · ${formatMoney(total)}`}>
-            <OrderList
-              orders={(orders ?? []) as OrderWithParties[]}
-              hrefBase="/admin/orders"
-              counterparty="both"
-              empty="No orders yet."
-            />
+          <Section title={`Orders · ${formatMoney(sales)}`}>
+            <OrderList orders={(orders ?? []) as OrderWithParties[]} hrefBase="/admin/orders" counterparty="both" empty="No orders yet." />
+          </Section>
+
+          <Section title="Admin activity">
+            {activity?.length ? (
+              <ul className="divide-y divide-line border-y border-line text-[14px]">
+                {activity.map((a, i) => {
+                  const d = a.details as Record<string, unknown>;
+                  const who = typeof d.name === "string" ? d.name : "";
+                  const extra =
+                    a.action === "payment_recorded" || a.action === "payment_deleted"
+                      ? formatMoney(Number(d.amount))
+                      : a.action === "subscription_update"
+                        ? `${SUBSCRIPTION_STATUSES[d.status as keyof typeof SUBSCRIPTION_STATUSES]?.label ?? d.status}${d.monthly_price != null ? ` · ${formatMoney(Number(d.monthly_price))}/mo` : ""}`
+                        : a.action === "view_as_end" && typeof d.minutes === "number"
+                          ? `${who} · ${d.minutes} min`
+                          : who;
+                  return (
+                    <li key={i} className="flex items-baseline justify-between gap-4 py-2.5">
+                      <span>
+                        {AUDIT_LABELS[a.action] ?? a.action}
+                        {extra && <span className="text-ink-soft"> &middot; {extra}</span>}
+                      </span>
+                      <span className="shrink-0 text-[12px] text-ink-soft">{dateTime.format(new Date(a.created_at))}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-ink-soft">No admin changes yet.</p>
+            )}
           </Section>
         </div>
 
         <aside className="space-y-14">
-          <Section title="Verified identity">
-            <p className="-mt-3 mb-5 text-[13px] text-ink-soft">Only Spectra can change these. The company sees them as locked.</p>
-            <IdentityForm id={company.id} name={company.name} license={company.license_number ?? ""} />
+          <Section title="Subscription">
+            {!subscription && <p className="mb-4 text-[13px] text-pending">No subscription record yet. Saving creates one.</p>}
+            <SubscriptionForm
+              companyId={company.id}
+              sub={{
+                status: subscription?.status ?? "trial",
+                monthly_price: subscription?.monthly_price != null ? String(subscription.monthly_price) : "",
+                trial_ends_on: subscription?.trial_ends_on ?? "",
+                next_due_date: subscription?.next_due_date ?? "",
+                notes: subscription?.notes ?? "",
+              }}
+            />
           </Section>
-          <Section title="Access">
-            <PauseControl id={company.id} name={company.name} active={company.is_active} isVendor={isVendor} />
+
+          <Section title={`Payments · ${formatMoney(collected)}`}>
+            <PaymentForm
+              companyId={company.id}
+              today={today}
+              suggested={subscription?.monthly_price != null ? String(subscription.monthly_price) : ""}
+            />
+            {paid.length > 0 && (
+              <ul className="mt-8 divide-y divide-line border-y border-line text-[14px]">
+                {paid.map((p) => (
+                  <li key={p.id} className="flex items-baseline justify-between gap-3 py-3">
+                    <span className="min-w-0">
+                      <span className="block font-mono">{formatMoney(p.amount)}</span>
+                      <span className="block truncate text-[12px] text-ink-soft">
+                        {formatDate(p.date)}
+                        {p.method && ` · ${p.method}`}
+                        {p.note && ` · ${p.note}`}
+                      </span>
+                    </span>
+                    <DeletePaymentButton id={p.id} label={`${formatMoney(p.amount)} on ${formatDate(p.date)}`} />
+                  </li>
+                ))}
+              </ul>
+            )}
           </Section>
         </aside>
       </div>
@@ -162,20 +221,14 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="mb-5 border-b border-ink pb-3 font-display text-2xl">{title}</h2>
+      <div className="mb-5 border-b border-ink pb-3">
+        <h2 className="font-display text-2xl">{title}</h2>
+        {note && <p className="mt-1 text-[13px] text-ink-soft">{note}</p>}
+      </div>
       {children}
     </section>
-  );
-}
-
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-[8rem_1fr] gap-4 py-3 text-[14px]">
-      <dt className="font-mono text-[11px] leading-6 tracking-[0.14em] text-ink-soft uppercase">{label}</dt>
-      <dd>{children || <span className="text-ink-soft/60">Not provided</span>}</dd>
-    </div>
   );
 }
