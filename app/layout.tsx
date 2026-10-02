@@ -19,9 +19,29 @@ const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const description =
+  "Wholesale cannabis marketplace built for Alaska. Licensed retailers order directly from cultivators and processors.";
+
+// Share previews (iMessage, Slack, social) use app/opengraph-image.png and twitter-image.png.
 export const metadata: Metadata = {
+  // The canonical host (apex redirects here); some preview crawlers won't follow redirects for images
+  metadataBase: new URL("https://www.spectrawholesale.com"),
   title: "Spectra Wholesale",
-  description: "Alaska's licensed cannabis wholesale marketplace.",
+  description,
+  applicationName: "Spectra Wholesale",
+  openGraph: {
+    type: "website",
+    siteName: "Spectra Wholesale",
+    title: "Spectra Wholesale",
+    description,
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Spectra Wholesale",
+    description,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
