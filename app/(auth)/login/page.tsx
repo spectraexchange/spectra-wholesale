@@ -19,7 +19,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <>
       <h1 className="font-display text-[2.1rem] leading-tight font-normal tracking-tight">Sign in</h1>
-      <p className="mt-2 mb-8 text-[15px] text-ink-soft">Welcome back. Your catalog and orders are waiting.</p>
+      <p className="mt-2 mb-8 text-[15px] text-ink-soft">Welcome back.</p>
 
       <LoginForm notice={notice && <Notice tone={notice.tone}>{notice.text}</Notice>} />
 
