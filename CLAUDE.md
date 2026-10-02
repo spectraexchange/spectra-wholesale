@@ -35,6 +35,8 @@ internal dashboards. New UI should feel like it belongs next to that sign-in pan
 ## Data rules
 
 - Admin/server data that crosses companies uses `createServiceClient()`; role checks via `lib/auth.ts`.
+- `requireBuyer()` / `requireSeller()` send users of paused companies (`is_active = false`) to `/paused`;
+  the buyer catalog and checkout also exclude paused vendors. Admins pause/reactivate in `/admin/companies/[id]`.
 - Vendor pages/actions call `requireSeller()` and filter every query by `company.id`
   (`.eq("seller_company_id", company.id)`), since the service client bypasses RLS.
 - Product vocabulary (categories, types, units, containers) lives in `lib/catalog.ts` and must

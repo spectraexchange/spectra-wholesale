@@ -25,7 +25,7 @@ export function OrderList({
 }: {
   orders: OrderWithParties[];
   hrefBase: string;
-  counterparty: "buyer" | "seller";
+  counterparty: "buyer" | "seller" | "both";
   empty: React.ReactNode;
 }) {
   if (!orders.length) return <div className="py-14 text-ink-soft">{empty}</div>;
@@ -39,9 +39,11 @@ export function OrderList({
             className="group grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-6 gap-y-1 py-5 sm:grid-cols-[7.5rem_minmax(0,1fr)_9rem_8rem]"
           >
             <span className="font-mono text-[14px] group-hover:text-sunset">{o.order_number}</span>
-            <span className="col-start-1 row-start-2 min-w-0 truncate sm:col-start-auto sm:row-start-auto">
-              <span className="font-display text-lg group-hover:text-sunset">{o[counterparty].name}</span>
-              <span className="ml-2 text-[13px] text-ink-soft">
+            <span className="col-start-1 row-start-2 min-w-0 sm:col-start-auto sm:row-start-auto">
+              <span className="block truncate font-display text-lg group-hover:text-sunset">
+                {counterparty === "both" ? `${o.buyer.name} \u2192 ${o.seller.name}` : o[counterparty].name}
+              </span>
+              <span className="block text-[13px] text-ink-soft">
                 {o.items.length} {o.items.length === 1 ? "item" : "items"} &middot; {formatPlaced(o.created_at)}
               </span>
             </span>
@@ -56,8 +58,9 @@ export function OrderList({
   );
 }
 
-export function OrderSummary({ order, side }: { order: OrderWithParties; side: "buyer" | "seller" }) {
-  const other = side === "buyer" ? order.seller : order.buyer;
+export function OrderSummary({ order, side }: { order: OrderWithParties; side: "buyer" | "seller" | "admin" }) {
+  // Each side sees the other party; admins see both
+  const parties = side === "admin" ? [["Vendor", order.seller], ["Buyer", order.buyer]] as const : side === "buyer" ? [["Vendor", order.seller]] as const : [["Buyer", order.buyer]] as const;
   const address = [order.buyer.address, [order.buyer.city, order.buyer.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
 
   return (
@@ -100,15 +103,17 @@ export function OrderSummary({ order, side }: { order: OrderWithParties; side: "
           <Fact label="Payment">
             {order.payment_status === "paid" ? <span className="text-success">Paid</span> : <span className="text-ink-soft">Unpaid</span>}
           </Fact>
-          <Fact label={side === "buyer" ? "Vendor" : "Buyer"}>
-            <span className="block">{other.name}</span>
-            {other.phone && <span className="block text-ink-soft">{other.phone}</span>}
-            {other.email && (
-              <a href={`mailto:${other.email}`} className="block text-ink-soft underline decoration-line underline-offset-4 hover:text-sunset">
-                {other.email}
-              </a>
-            )}
-          </Fact>
+          {parties.map(([label, party]) => (
+            <Fact key={label} label={label}>
+              <span className="block">{party.name}</span>
+              {party.phone && <span className="block text-ink-soft">{party.phone}</span>}
+              {party.email && (
+                <a href={`mailto:${party.email}`} className="block text-ink-soft underline decoration-line underline-offset-4 hover:text-sunset">
+                  {party.email}
+                </a>
+              )}
+            </Fact>
+          ))}
           <Fact label="Deliver to">
             <span className="block">{address}</span>
             {order.buyer.receiving_hours && <span className="block text-ink-soft">Receiving {order.buyer.receiving_hours}</span>}

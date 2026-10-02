@@ -29,7 +29,13 @@ export async function placeOrder(sellerId: string, _prev: CheckoutState, formDat
   const viewer = await requireBuyer();
   const notes = String(formData.get("notes") ?? "").slice(0, 1000);
 
-  const { data, error } = await createServiceClient().rpc("place_order", {
+  const service = createServiceClient();
+  const { data: vendor } = await service.from("companies").select("is_active, is_approved").eq("id", sellerId).maybeSingle();
+  if (!vendor?.is_active || !vendor.is_approved) {
+    return { error: "This vendor isn\u2019t taking orders right now. Remove their items from your cart to continue." };
+  }
+
+  const { data, error } = await service.rpc("place_order", {
     p_buyer_profile_id: viewer.id,
     p_seller_company_id: sellerId,
     p_notes: notes,

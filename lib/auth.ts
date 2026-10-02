@@ -9,7 +9,7 @@ export type Viewer = {
   email: string;
   fullName: string;
   role: string;
-  company: { id: string; name: string; type: string } | null;
+  company: { id: string; name: string; type: string; is_active: boolean } | null;
 };
 
 export async function getViewer(): Promise<Viewer | null> {
@@ -19,7 +19,7 @@ export async function getViewer(): Promise<Viewer | null> {
 
   const { data: profile } = await createServiceClient()
     .from("profiles")
-    .select("full_name, role, companies(id, name, type)")
+    .select("full_name, role, companies(id, name, type, is_active)")
     .eq("id", user.id)
     .single();
 
@@ -34,7 +34,7 @@ export async function getViewer(): Promise<Viewer | null> {
 }
 
 export function homeFor(role: string) {
-  if (role === "super_admin") return "/admin/access-requests";
+  if (role === "super_admin") return "/admin";
   if (role === "seller" || role === "seller_admin") return "/seller/products";
   if (role === "buyer" || role === "buyer_admin") return "/buyer/browse";
   return "/dashboard";
@@ -52,6 +52,7 @@ export async function requireSeller() {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
   if (!["seller", "seller_admin"].includes(viewer.role) || !viewer.company) redirect(homeFor(viewer.role));
+  if (!viewer.company.is_active) redirect("/paused");
   return viewer as Viewer & { company: NonNullable<Viewer["company"]> };
 }
 
@@ -60,5 +61,6 @@ export async function requireBuyer() {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
   if (!["buyer", "buyer_admin"].includes(viewer.role) || !viewer.company) redirect(homeFor(viewer.role));
+  if (!viewer.company.is_active) redirect("/paused");
   return viewer as Viewer & { company: NonNullable<Viewer["company"]> };
 }

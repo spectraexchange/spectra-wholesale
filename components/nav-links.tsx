@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type NavItem = { href: string; label: string; count?: number };
+export type NavItem = { href: string; label: string; count?: number; exact?: boolean };
 
 export function NavLinks({ items, className = "" }: { items: NavItem[]; className?: string }) {
   const pathname = usePathname();
@@ -11,7 +11,7 @@ export function NavLinks({ items, className = "" }: { items: NavItem[]; classNam
   return (
     <nav className={`items-stretch gap-1 self-stretch ${className}`}>
       {items.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const active = pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`));
         return (
           <Link
             key={item.href}
