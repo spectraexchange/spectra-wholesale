@@ -30,7 +30,7 @@ export function useLiveErrors(serverErrors: Record<string, string | undefined> |
 }
 
 const inputClass =
-  "block w-full rounded-[3px] border border-line bg-field px-3.5 py-3 text-[15px] text-ink transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-ink-soft/50 hover:border-ink-soft/50 focus:border-sunset focus:bg-field-focus focus:shadow-[0_0_0_3px_rgba(196,70,26,0.18)] focus:outline-none aria-invalid:border-danger";
+  "block w-full rounded-[3px] border border-line bg-field px-3.5 py-3 text-[15px] text-ink transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-ink-soft/50 hover:border-ink-soft/50 focus:border-sunset focus:bg-field-focus focus:shadow-[0_0_0_3px_rgba(196,70,26,0.18)] focus:outline-none aria-invalid:border-danger disabled:cursor-not-allowed disabled:bg-paper-deep disabled:text-ink-soft";
 
 export function Label({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (

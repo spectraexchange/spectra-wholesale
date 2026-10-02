@@ -4,7 +4,7 @@ import { requireSeller } from "@/lib/auth";
 const NAV = [
   { href: "/seller/products", label: "Products" },
   { href: "/seller/orders", label: "Orders" },
-  { href: "/seller/company", label: "Company" },
+  { href: "/seller/account", label: "Account" },
 ];
 
 export default async function SellerLayout({ children }: { children: React.ReactNode }) {
