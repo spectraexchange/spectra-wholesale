@@ -77,7 +77,7 @@ export default async function AdminBillingPage({ searchParams }: PageProps<"/adm
           { label: `Collected in ${yearPrefix}`, value: formatMoney(thisYear) },
           { label: "On trial", value: String(counts.trial), detail: trialsEnding.length ? `${trialsEnding.length} ending in 2 weeks` : undefined },
         ].map((s, i) => (
-          <div key={s.label} className={`py-6 ${i % 2 ? "border-l border-line pl-5" : "pr-4"} lg:border-l lg:pl-5 lg:first:border-l-0 lg:first:pl-0`}>
+          <div key={s.label} className={`border-line py-6 ${i % 2 ? "border-l pl-5" : "pr-4"} lg:border-l lg:pl-5 lg:first:border-l-0 lg:first:pl-0`}>
             <dt className="font-mono text-[10px] tracking-[0.16em] text-ink-soft uppercase">{s.label}</dt>
             <dd className="mt-2 font-display text-4xl font-light">{s.value}</dd>
             {s.detail && <dd className="mt-1 text-[13px] text-ink-soft">{s.detail}</dd>}

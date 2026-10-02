@@ -3,6 +3,10 @@
 -- the old build and are empty; this reshapes them for the new admin.
 
 -- ── Subscriptions (one row per company) ───────────────────────────────────
+-- The live table had a plan check from the old build that rejects "standard";
+-- plan isn't used any more, so drop it.
+alter table vendor_billing drop constraint if exists vendor_billing_plan_check;
+
 alter table vendor_billing add column if not exists monthly_price numeric(10,2);
 alter table vendor_billing add column if not exists trial_ends_on date;
 
