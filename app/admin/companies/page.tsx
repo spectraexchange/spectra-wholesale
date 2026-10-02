@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { formatMoney } from "@/lib/catalog";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireSuperAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Companies · Spectra Admin" };
 
@@ -14,6 +15,8 @@ const VIEWS = {
 type View = keyof typeof VIEWS;
 
 export default async function AdminCompaniesPage({ searchParams }: PageProps<"/admin/companies">) {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireSuperAdmin();
   const params = await searchParams;
   const view: View = params.type === "buyer" || params.type === "seller" || params.type === "paused" ? params.type : "all";
   const q = typeof params.q === "string" ? params.q.trim().toLowerCase() : "";

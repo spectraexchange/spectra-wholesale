@@ -3,11 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ORDER_SELECT, OrderSummary, StatusLabel, type OrderWithParties } from "@/components/orders";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireSuperAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Order · Spectra Admin" };
 
 // Read-only: vendors manage their own orders; admins can see every order.
 export default async function AdminOrderPage({ params }: PageProps<"/admin/orders/[id]">) {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireSuperAdmin();
   const { id } = await params;
   const { data } = await createServiceClient().from("orders").select(ORDER_SELECT).eq("id", id).maybeSingle();
   if (!data) notFound();

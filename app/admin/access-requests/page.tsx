@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { LICENSE_BUCKET, LICENSE_DOCS, formatPhone, type LicenseDocKey } from "@/lib/access-requests";
 import { createServiceClient } from "@/lib/supabase/server";
 import { RequestActions } from "./request-actions";
+import { requireSuperAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Access requests · Spectra Admin" };
 
@@ -33,6 +34,8 @@ type AccessRequest = {
 const dateFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Anchorage" });
 
 export default async function AccessRequestsPage() {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireSuperAdmin();
   const service = createServiceClient();
   const { data } = await service.from("access_requests").select("*").order("created_at", { ascending: false });
   const requests = (data ?? []) as AccessRequest[];

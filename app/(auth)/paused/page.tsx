@@ -15,13 +15,22 @@ export default async function PausedPage() {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
   // Only paused companies belong here
-  if (!viewer.company || viewer.company.is_active) redirect(homeFor(viewer.role));
+  if (viewer.role === "super_admin") redirect("/admin");
+  const company = viewer.company;
+  if (company?.is_active && company.is_approved) redirect(homeFor(viewer.role));
+  const state = !company ? "none" : !company.is_approved ? "pending" : "paused";
 
   return (
     <>
-      <h1 className="font-display text-[2.1rem] leading-tight font-normal tracking-tight">Account paused</h1>
+      <h1 className="font-display text-[2.1rem] leading-tight font-normal tracking-tight">
+        {state === "paused" ? "Account paused" : state === "pending" ? "Waiting for approval" : "No business on file"}
+      </h1>
       <p className="mt-2 mb-8 text-[15px] text-ink-soft">
-        {viewer.company.name}&rsquo;s Spectra account is paused, so ordering and listings are on hold.
+        {state === "paused"
+          ? `${company?.name}\u2019s Spectra account is paused, so ordering and listings are on hold.`
+          : state === "pending"
+            ? `${company?.name} hasn\u2019t been approved for Spectra yet.`
+            : "This login isn\u2019t connected to an approved business. Spectra accounts are created through a request for access."}
       </p>
       <div className="space-y-4 border-t border-line pt-6 text-[15px] text-ink-soft">
         <p>

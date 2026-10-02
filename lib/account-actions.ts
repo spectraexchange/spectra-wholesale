@@ -43,6 +43,7 @@ export async function updateCompany(_prev: AccountFormState, formData: FormData)
   const viewer = await getViewer();
   if (!viewer?.company) return { error: "Your session ended. Sign in again." };
   if (!ADMIN_ROLES.includes(viewer.role)) return { error: "Only your company’s admin can change these details." };
+  if (!viewer.company.is_active || !viewer.company.is_approved) return { error: "This account is paused. Contact Spectra." };
 
   const isBuyer = viewer.company.type === "buyer";
   const patch = {

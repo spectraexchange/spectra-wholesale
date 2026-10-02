@@ -4,10 +4,13 @@ import { notFound } from "next/navigation";
 import { CONTAINER_TYPES, categoryLabel, formatMoney, formatQty, strainLabel, subCategoryLabel, unitLabel } from "@/lib/catalog";
 import { AddToCart } from "../../add-to-cart";
 import { catalogQuery, toCatalogProduct } from "../../catalog";
+import { requireBuyer } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Product · Spectra Wholesale" };
 
 export default async function BuyerProductPage({ params }: PageProps<"/buyer/products/[id]">) {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireBuyer();
   const { id } = await params;
   const { data } = await catalogQuery().eq("id", id).maybeSingle();
   if (!data) notFound();

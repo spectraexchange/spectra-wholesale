@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ORDER_SELECT, OrderList, type OrderWithParties } from "@/components/orders";
 import { formatMoney } from "@/lib/catalog";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireSuperAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Orders · Spectra Admin" };
 
@@ -15,6 +16,8 @@ const VIEWS = {
 type View = keyof typeof VIEWS;
 
 export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/orders">) {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireSuperAdmin();
   const { view: viewParam } = await searchParams;
   const view: View = viewParam === "delivered" || viewParam === "cancelled" || viewParam === "all" ? viewParam : "open";
 

@@ -9,7 +9,7 @@ export type Viewer = {
   email: string;
   fullName: string;
   role: string;
-  company: { id: string; name: string; type: string; is_active: boolean } | null;
+  company: { id: string; name: string; type: string; is_active: boolean; is_approved: boolean } | null;
 };
 
 export async function getViewer(): Promise<Viewer | null> {
@@ -19,7 +19,7 @@ export async function getViewer(): Promise<Viewer | null> {
 
   const { data: profile } = await createServiceClient()
     .from("profiles")
-    .select("full_name, role, companies(id, name, type, is_active)")
+    .select("full_name, role, companies(id, name, type, is_active, is_approved)")
     .eq("id", user.id)
     .single();
 
@@ -51,8 +51,10 @@ export async function requireSuperAdmin() {
 export async function requireSeller() {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
-  if (!["seller", "seller_admin"].includes(viewer.role) || !viewer.company) redirect(homeFor(viewer.role));
-  if (!viewer.company.is_active) redirect("/paused");
+  if (!["seller", "seller_admin"].includes(viewer.role)) redirect(homeFor(viewer.role));
+  // Only users of approved, active companies get in. Accounts with no company
+  // (e.g. created outside the approval flow) land on /paused, never in a loop.
+  if (!viewer.company || !viewer.company.is_active || !viewer.company.is_approved) redirect("/paused");
   return viewer as Viewer & { company: NonNullable<Viewer["company"]> };
 }
 
@@ -60,7 +62,9 @@ export async function requireSeller() {
 export async function requireBuyer() {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
-  if (!["buyer", "buyer_admin"].includes(viewer.role) || !viewer.company) redirect(homeFor(viewer.role));
-  if (!viewer.company.is_active) redirect("/paused");
+  if (!["buyer", "buyer_admin"].includes(viewer.role)) redirect(homeFor(viewer.role));
+  // Only users of approved, active companies get in. Accounts with no company
+  // (e.g. created outside the approval flow) land on /paused, never in a loop.
+  if (!viewer.company || !viewer.company.is_active || !viewer.company.is_approved) redirect("/paused");
   return viewer as Viewer & { company: NonNullable<Viewer["company"]> };
 }

@@ -3,10 +3,13 @@ import Link from "next/link";
 import { CATEGORIES, categoryLabel, formatMoney, strainLabel, subCategoryLabel, unitLabel } from "@/lib/catalog";
 import { AddToCart } from "../add-to-cart";
 import { catalogQuery, toCatalogProduct, type CatalogProduct } from "../catalog";
+import { requireBuyer } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Browse · Spectra Wholesale" };
 
 export default async function BrowsePage({ searchParams }: PageProps<"/buyer/browse">) {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireBuyer();
   const params = await searchParams;
   const category = typeof params.category === "string" ? params.category : "";
   const vendorId = typeof params.vendor === "string" ? params.vendor : "";

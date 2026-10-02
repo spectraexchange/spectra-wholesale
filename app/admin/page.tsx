@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ORDER_SELECT, OrderList, type OrderWithParties } from "@/components/orders";
 import { formatMoney } from "@/lib/catalog";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireSuperAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Overview · Spectra Admin" };
 
@@ -19,6 +20,8 @@ function alaskaMonthStart() {
 }
 
 export default async function AdminOverviewPage() {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireSuperAdmin();
   const service = createServiceClient();
   const month = alaskaMonthStart();
 

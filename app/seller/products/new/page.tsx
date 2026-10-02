@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ProductForm } from "../product-form";
+import { requireSeller } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Add product · Spectra Wholesale" };
 
-export default function NewProductPage() {
+export default async function NewProductPage() {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireSeller();
   return (
     <>
       <Link href="/seller/products" className="text-sm text-ink-soft hover:text-sunset">

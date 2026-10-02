@@ -8,6 +8,7 @@ import { SUBSCRIPTION_STATUSES, alaskaToday, formatDate, type Payment, type Subs
 import { categoryLabel, formatMoney, unitLabel } from "@/lib/catalog";
 import { createServiceClient } from "@/lib/supabase/server";
 import { CompanyDetailsForm, DeletePaymentButton, PaymentForm, SubscriptionForm, UserRow } from "./company-controls";
+import { requireSuperAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Company · Spectra Admin" };
 
@@ -15,6 +16,8 @@ const dateTime = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeri
 const dateOnly = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Anchorage" });
 
 export default async function AdminCompanyPage({ params }: PageProps<"/admin/companies/[id]">) {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireSuperAdmin();
   const { id } = await params;
   const service = createServiceClient();
 

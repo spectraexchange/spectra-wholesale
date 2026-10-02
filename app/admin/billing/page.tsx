@@ -3,12 +3,15 @@ import Link from "next/link";
 import { SUBSCRIPTION_STATUSES, addDays, alaskaToday, formatDate, type Payment, type Subscription, type SubscriptionStatus } from "@/lib/billing";
 import { formatMoney } from "@/lib/catalog";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireSuperAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Billing · Spectra Admin" };
 
 type Row = Subscription & { company: { id: string; name: string; type: string } };
 
 export default async function AdminBillingPage({ searchParams }: PageProps<"/admin/billing">) {
+  // Checked here, not just in the layout: layouts don't stop a page from rendering.
+  await requireSuperAdmin();
   const { status: statusParam } = await searchParams;
   const filter = typeof statusParam === "string" && statusParam in SUBSCRIPTION_STATUSES ? (statusParam as SubscriptionStatus) : null;
 
