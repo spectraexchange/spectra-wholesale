@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSeller } from "@/lib/auth";
-import { CATEGORIES, CONTAINER_TYPES, STRAIN_TYPES, SUB_CATEGORIES, UNITS, type Category } from "@/lib/catalog";
+import { roundPrice, validateProduct } from "@/lib/product-rules";
 import { createServiceClient } from "@/lib/supabase/server";
 
 const MEDIA = {
@@ -41,10 +41,9 @@ export type ProductFormState = {
 export async function saveProduct(_prev: ProductFormState, formData: FormData): Promise<ProductFormState> {
   const { company } = await requireSeller();
   const text = (key: string) => String(formData.get(key) ?? "").trim();
-  const errors: Record<string, string> = {};
 
   const id = text("id") || null;
-  const category = text("category") as Category;
+  const category = text("category");
   const subCategory = text("sub_category") || null;
   const number = (key: string) => (text(key) === "" ? null : Number(text(key)));
 
@@ -66,33 +65,8 @@ export async function saveProduct(_prev: ProductFormState, formData: FormData): 
     test_results_url: text("test_results_url") || null,
   };
 
-  if (!product.name) errors.name = "Give the product a name.";
-  else if (product.name.length > 120) errors.name = "Keep it under 120 characters.";
-  if (!CATEGORIES.some((c) => c.value === category)) errors.category = "Choose a category.";
-  else if (subCategory && !SUB_CATEGORIES[category].some((s) => s.value === subCategory)) {
-    errors.sub_category = "Choose a type from the list.";
-  }
-  if (!STRAIN_TYPES.some((s) => s.value === product.strain_type)) errors.strain_type = "Choose a strain type.";
-  if (product.thc_percentage !== null && (!Number.isFinite(product.thc_percentage) || product.thc_percentage < 0 || product.thc_percentage > 100)) {
-    errors.thc_percentage = "Enter a percentage from 0 to 100.";
-  }
-  if (product.price_per_unit === null || !Number.isFinite(product.price_per_unit) || product.price_per_unit <= 0) {
-    errors.price_per_unit = "Enter a price above $0.";
-  } else if (product.price_per_unit >= 1_000_000) {
-    errors.price_per_unit = "That price looks too high.";
-  } else {
-    product.price_per_unit = Math.round(product.price_per_unit * 100) / 100;
-  }
-  if (!UNITS.some((u) => u.value === product.unit)) errors.unit = "Choose a unit.";
-  if (product.stock_qty === null || !Number.isInteger(product.stock_qty) || product.stock_qty < 0) {
-    errors.stock_qty = "Enter a whole number, 0 or more.";
-  }
-  if (product.min_order_qty !== null && (!Number.isInteger(product.min_order_qty) || product.min_order_qty < 1)) {
-    errors.min_order_qty = "Enter a whole number, 1 or more.";
-  }
-  if (!CONTAINER_TYPES.some((c) => c.value === product.container_type)) errors.container_type = "Choose a container.";
-  if (product.sku && product.sku.length > 40) errors.sku = "Keep the SKU under 40 characters.";
-  if (product.description && product.description.length > 2000) errors.description = "Keep it under 2,000 characters.";
+  const errors = validateProduct(product);
+  if (!errors.price_per_unit && product.price_per_unit !== null) product.price_per_unit = roundPrice(product.price_per_unit);
   // Media must live in this company's folder
   if (product.image_url && !product.image_url.startsWith(publicPrefix(MEDIA.image.bucket, company.id))) {
     errors.image_url = "Upload the photo again.";

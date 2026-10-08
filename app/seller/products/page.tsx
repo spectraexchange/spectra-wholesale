@@ -43,15 +43,20 @@ export default async function ProductsPage({ searchParams }: PageProps<"/seller/
           <p className="font-mono text-[11px] tracking-[0.2em] text-ink-soft uppercase">Catalog</p>
           <h1 className="mt-2 font-display text-5xl font-light tracking-tight">Products</h1>
         </div>
-        <Link
-          href="/seller/products/new"
-          className="group inline-flex items-center gap-2 rounded-[3px] bg-sunset px-5 py-3 text-[15px] font-semibold text-on-sunset shadow-[3px_3px_0_0_var(--press)] transition-[background-color,transform,box-shadow] duration-100 hover:bg-sunset-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sunset"
-        >
-          Add product
-          <span aria-hidden className="transition-transform duration-150 group-hover:translate-x-1">
-            +
-          </span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-6">
+          <Link href="/seller/products/import" className="text-[15px] text-ink underline decoration-sunset decoration-2 underline-offset-4 hover:text-sunset">
+            Import spreadsheet
+          </Link>
+          <Link
+            href="/seller/products/new"
+            className="group inline-flex items-center gap-2 rounded-[3px] bg-sunset px-5 py-3 text-[15px] font-semibold text-on-sunset shadow-[3px_3px_0_0_var(--press)] transition-[background-color,transform,box-shadow] duration-100 hover:bg-sunset-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sunset"
+          >
+            Add product
+            <span aria-hidden className="transition-transform duration-150 group-hover:translate-x-1">
+              +
+            </span>
+          </Link>
+        </div>
       </div>
 
       {saved && (

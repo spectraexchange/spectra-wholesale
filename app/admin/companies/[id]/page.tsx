@@ -121,6 +121,15 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
 
           {isVendor && (
             <Section title={`Products · ${live.length} live of ${products?.length ?? 0}`}>
+              <p className="-mt-2 mb-4 text-[14px]">
+                <Link
+                  href={`/admin/companies/${company.id}/import`}
+                  className="text-ink underline decoration-sunset decoration-2 underline-offset-4 hover:text-sunset"
+                >
+                  Import from a spreadsheet &rarr;
+                </Link>
+                <span className="text-ink-soft"> &middot; to add or edit one product, use View as on a user above.</span>
+              </p>
               {products?.length ? (
                 <ul className="divide-y divide-line border-y border-line">
                   {products.map((p) => (
@@ -161,7 +170,9 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
                         ? `${SUBSCRIPTION_STATUSES[d.status as keyof typeof SUBSCRIPTION_STATUSES]?.label ?? d.status}${d.monthly_price != null ? ` · ${formatMoney(Number(d.monthly_price))}/mo` : ""}`
                         : a.action === "view_as_end" && typeof d.minutes === "number"
                           ? `${who} · ${d.minutes} min`
-                          : who;
+                          : a.action === "products_import"
+                            ? `${d.created} new, ${d.updated} updated${Number(d.skipped) ? `, ${d.skipped} skipped` : ""}`
+                            : who;
                   return (
                     <li key={i} className="flex items-baseline justify-between gap-4 py-2.5">
                       <span>
