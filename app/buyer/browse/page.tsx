@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CATEGORIES, categoryLabel, formatMoney, strainLabel, subCategoryLabel, unitLabel } from "@/lib/catalog";
+import { StrainInfo } from "@/components/strain-badge";
+import { CATEGORIES, categoryLabel, formatMoney, subCategoryLabel, unitLabel } from "@/lib/catalog";
 import { AddToCart } from "../add-to-cart";
 import { catalogQuery, toCatalogProduct, type CatalogProduct } from "../catalog";
 import { requireBuyer } from "@/lib/auth";
@@ -133,9 +134,7 @@ export default async function BrowsePage({ searchParams }: PageProps<"/buyer/bro
 }
 
 function ProductTile({ product: p }: { product: CatalogProduct }) {
-  const detail = [subCategoryLabel(p.category, p.sub_category) || categoryLabel(p.category), p.strain_type !== "na" && strainLabel(p.strain_type), p.thc_percentage !== null && `${p.thc_percentage}% THC`]
-    .filter(Boolean)
-    .join(" · ");
+  const detail = subCategoryLabel(p.category, p.sub_category) || categoryLabel(p.category);
 
   return (
     <li className="flex flex-col">
@@ -151,6 +150,9 @@ function ProductTile({ product: p }: { product: CatalogProduct }) {
         <p className="mt-4 font-mono text-[10px] tracking-[0.16em] text-ink-soft uppercase">{p.vendor.name}</p>
         <h2 className="mt-1 font-display text-xl leading-snug group-hover:text-sunset">{p.name}</h2>
         <p className="mt-1 text-[13px] text-ink-soft">{detail}</p>
+        <div className="mt-2 min-h-5">
+          <StrainInfo strain={p.strain_type} thc={p.thc_percentage} />
+        </div>
       </Link>
 
       <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-line pt-3">

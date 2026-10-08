@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CONTAINER_TYPES, categoryLabel, formatMoney, formatQty, strainLabel, subCategoryLabel, unitLabel } from "@/lib/catalog";
+import { StrainInfo } from "@/components/strain-badge";
+import { CONTAINER_TYPES, categoryLabel, formatMoney, formatQty, subCategoryLabel, unitLabel } from "@/lib/catalog";
 import { AddToCart } from "../../add-to-cart";
 import { catalogQuery, toCatalogProduct } from "../../catalog";
 import { requireBuyer } from "@/lib/auth";
@@ -18,8 +19,6 @@ export default async function BuyerProductPage({ params }: PageProps<"/buyer/pro
 
   const facts: [string, React.ReactNode][] = [
     ["Category", [categoryLabel(p.category), subCategoryLabel(p.category, p.sub_category)].filter(Boolean).join(" · ")],
-    ["Strain", p.strain_type !== "na" ? strainLabel(p.strain_type) : null],
-    ["THC", p.thc_percentage !== null ? `${p.thc_percentage}%` : null],
     ["Available", p.stock_qty > 0 ? formatQty(p.stock_qty, p.unit) : "Out of stock"],
     ["Minimum order", p.min_order_qty && p.min_order_qty > 1 ? String(p.min_order_qty) : null],
     ["Container", p.container_type !== "none" ? CONTAINER_TYPES.find((c) => c.value === p.container_type)?.label : null],
@@ -51,6 +50,9 @@ export default async function BuyerProductPage({ params }: PageProps<"/buyer/pro
             {p.vendor.city && <> &middot; {p.vendor.city}</>}
           </Link>
           <h1 className="mt-2 font-display text-4xl leading-tight font-light tracking-tight sm:text-5xl">{p.name}</h1>
+          <div className="mt-4">
+            <StrainInfo strain={p.strain_type} thc={p.thc_percentage} size="lg" />
+          </div>
 
           <p className="mt-6">
             <span className="font-mono text-3xl">{formatMoney(p.price_per_unit)}</span>

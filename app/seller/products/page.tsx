@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Notice } from "@/components/form";
 import { requireSeller } from "@/lib/auth";
-import { categoryLabel, formatMoney, strainLabel, subCategoryLabel, unitLabel, type Product } from "@/lib/catalog";
+import { StrainInfo } from "@/components/strain-badge";
+import { categoryLabel, formatMoney, subCategoryLabel, unitLabel, type Product } from "@/lib/catalog";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ProductRowActions } from "./row-actions";
 
@@ -103,10 +104,11 @@ export default async function ProductsPage({ searchParams }: PageProps<"/seller/
                   {p.name}
                 </Link>
                 <p className="mt-0.5 truncate text-[13px] text-ink-soft">
-                  {[categoryLabel(p.category), subCategoryLabel(p.category, p.sub_category), p.strain_type !== "na" && strainLabel(p.strain_type), p.thc_percentage !== null && `${p.thc_percentage}% THC`]
-                    .filter(Boolean)
-                    .join(" · ")}
+                  {[categoryLabel(p.category), subCategoryLabel(p.category, p.sub_category)].filter(Boolean).join(" · ")}
                 </p>
+                <div className="mt-1.5">
+                  <StrainInfo strain={p.strain_type} thc={p.thc_percentage} />
+                </div>
                 {/* Price + stock fold under the name on small screens */}
                 <p className="mt-1 text-[13px] sm:hidden">
                   {formatMoney(p.price_per_unit)} / {unitLabel(p.unit)} &middot; {p.stock_qty} in stock

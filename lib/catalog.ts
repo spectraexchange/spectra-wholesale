@@ -76,9 +76,9 @@ export const SUB_CATEGORIES: Record<Category, { value: string; label: string }[]
 export const STRAIN_TYPES = [
   { value: "na", label: "N/A" },
   { value: "indica", label: "Indica" },
-  { value: "indica_dom", label: "Indica dominant" },
+  { value: "indica_dom", label: "Indica Hybrid" },
   { value: "hybrid", label: "Hybrid" },
-  { value: "sativa_dom", label: "Sativa dominant" },
+  { value: "sativa_dom", label: "Sativa Hybrid" },
   { value: "sativa", label: "Sativa" },
 ] as const;
 export type StrainType = (typeof STRAIN_TYPES)[number]["value"];

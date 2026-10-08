@@ -24,6 +24,9 @@
   --success-tint: #dfe8d3;
   --pending: #8f5400;        /* amber that passes contrast on cream */
   --info: #1f5c66;
+  --indica: #5b3f8c;         /* strain badges: purple / green / orange, the usual convention */
+  --hybrid: #2f6b4a;
+  --sativa: #a14a12;
 }
 
 [data-theme="dark"] {
@@ -45,6 +48,9 @@
   --success-tint: #16281a;
   --pending: #f2a531;
   --info: #7cc0ca;
+  --indica: #c0a8ea;
+  --hybrid: #8fcca5;
+  --sativa: #f0995c;
 }
 
 /* Fixed in both themes */
@@ -79,6 +85,9 @@
   --color-success-tint: var(--success-tint);
   --color-pending: var(--pending);
   --color-info: var(--info);
+  --color-indica: var(--indica);
+  --color-hybrid: var(--hybrid);
+  --color-sativa: var(--sativa);
   --font-sans: var(--font-jakarta);
   --font-display: var(--font-fraunces);
   --font-mono: var(--font-jetbrains);
