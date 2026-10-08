@@ -1,5 +1,6 @@
 import { InvoiceSettingsForm } from "@/app/seller/account/invoice-settings-form";
 import { CompanyForm, PasswordForm, ProfileForm } from "@/components/account-forms";
+import { LicenseDocs } from "@/components/license-docs";
 import { LICENSE_BUCKET, LICENSE_DOCS, type LicenseDocKey } from "@/lib/access-requests";
 import type { Viewer } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -122,23 +123,16 @@ export async function AccountPage({ viewer }: { viewer: Viewer & { company: NonN
               <Row label="License #" mono>
                 {company?.license_number}
               </Row>
-              {(Object.keys(LICENSE_DOCS) as LicenseDocKey[]).map((key) => {
-                const href = company?.[key] && urlFor.get(company[key]);
-                return (
-                  <Row key={key} label={key === "mj_license_path" ? "MJ license" : "Business lic."}>
-                    {href ? (
-                      <a href={href} target="_blank" rel="noreferrer" className="text-sunset underline underline-offset-4 hover:text-sunset-hover">
-                        View &#8599;
-                      </a>
-                    ) : (
-                      <span className="text-ink-soft">Not on file</span>
-                    )}
-                  </Row>
-                );
-              })}
+              <LicenseDocs
+                docs={(Object.keys(LICENSE_DOCS) as LicenseDocKey[]).map((key) => ({
+                  key,
+                  label: key === "mj_license_path" ? "MJ license" : "Business lic.",
+                  href: (company?.[key] && urlFor.get(company[key])) || null,
+                }))}
+              />
             </dl>
             <p className="mt-3 text-[13px] text-ink-soft">
-              Business name and license are verified by Spectra. To update them, email{" "}
+              Upload renewed licenses here any time. To change the business name or license number, email{" "}
               <a href="mailto:info@spectrawholesale.com" className="underline underline-offset-4 hover:text-sunset">
                 info@spectrawholesale.com
               </a>

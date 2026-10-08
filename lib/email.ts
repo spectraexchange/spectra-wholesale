@@ -67,7 +67,15 @@ export function newRequestEmail(opts: { name: string; company: string; accountTy
   `);
 }
 
-type EmailLine = { name: string; qty: string; lineTotal: string };
+export function licenseUpdatedEmail(opts: { company: string; document: string; name: string; reviewUrl: string }) {
+  return layout(`
+    <h1 style="margin:0 0 12px;font-family:Georgia,serif;font-weight:normal;font-size:24px;">License document updated</h1>
+    <p style="margin:0 0 24px;"><strong>${escapeHtml(opts.company)}</strong> uploaded a new ${escapeHtml(opts.document.toLowerCase())}.<br>Uploaded by ${escapeHtml(opts.name)}</p>
+    <p style="margin:0;">${button(opts.reviewUrl, "Review document")}</p>
+  `);
+}
+
+type EmailLine ={ name: string; qty: string; lineTotal: string };
 
 function linesTable(lines: EmailLine[], total: string) {
   const rows = lines

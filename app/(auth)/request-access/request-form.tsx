@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useRef, useState, startTransition } from "react";
 import { Field, FieldError, Label, Notice, SubmitButton, TextArea, useLiveErrors } from "@/components/form";
-import { LICENSE_BUCKET, LICENSE_DOCS, type LicenseDocKey } from "@/lib/access-requests";
+import { LICENSE_BUCKET, LICENSE_DOCS, docContentType, type LicenseDocKey } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/client";
 import { createUploadSlot, submitRequest, type RequestState } from "./actions";
 
@@ -34,7 +34,7 @@ export function RequestForm() {
         if ("error" in slot) return { fieldErrors: { [key]: slot.error }, error: "Check the highlighted fields." };
         const { error } = await supabase.storage
           .from(LICENSE_BUCKET)
-          .uploadToSignedUrl(slot.path, slot.token, file, { contentType: file.type || undefined });
+          .uploadToSignedUrl(slot.path, slot.token, file, { contentType: docContentType(file) });
         if (error) return { fieldErrors: { [key]: "Upload failed. Try again." }, error: "Check the highlighted fields." };
         path = slot.path;
         uploaded.current.set(file, path);

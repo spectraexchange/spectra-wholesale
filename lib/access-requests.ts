@@ -12,6 +12,12 @@ export type LicenseDocKey = keyof typeof LICENSE_DOCS;
 
 export const ALLOWED_DOC_EXTENSIONS = ["pdf", "jpg", "jpeg", "png", "heic", "webp"];
 
+// Some phones send HEIC photos with no MIME type, which the bucket rejects; fall back to the extension.
+const DOC_TYPES: Record<string, string> = { pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", heic: "image/heic", webp: "image/webp" };
+export function docContentType(file: File) {
+  return file.type || DOC_TYPES[file.name.split(".").pop()?.toLowerCase() ?? ""] || undefined;
+}
+
 export type AccessRequestInput = {
   account_type: "buyer" | "seller";
   first_name: string;
