@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { logError } from "@/lib/error-log";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,16 +14,25 @@ export function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
-export async function sendEmail(opts: { to: string; subject: string; html: string; from?: string }) {
+export async function sendEmail(opts: { to: string; subject: string; html: string; from?: string; replyTo?: string }) {
   // RFC 2606 reserved domains can never receive mail; skip them (used by test accounts).
   if (/@(.+\.)?(example\.(com|org|net)|test|invalid)$/i.test(opts.to)) return { error: undefined };
-  const { error } = await resend.emails.send({
-    from: opts.from ?? "Spectra Wholesale <info@spectrawholesale.com>",
-    to: opts.to,
-    subject: opts.subject,
-    html: opts.html,
-  });
-  return { error: error?.message };
+  let message: string | undefined;
+  try {
+    const { error } = await resend.emails.send({
+      from: opts.from ?? "Spectra Wholesale <info@spectrawholesale.com>",
+      to: opts.to,
+      subject: opts.subject,
+      html: opts.html,
+      ...(opts.replyTo && { replyTo: opts.replyTo }),
+    });
+    message = error?.message;
+  } catch (err) {
+    message = err instanceof Error ? err.message : String(err);
+  }
+  // Callers treat email as best effort, so failures are logged here or nowhere.
+  if (message) await logError({ source: "email", message: `Email failed: ${message}`, detail: `To: ${opts.to}\nSubject: ${opts.subject}` });
+  return { error: message };
 }
 
 // Shared shell in the login page's palette. `body` must already be escaped.
@@ -144,5 +154,39 @@ export function passwordResetEmail(opts: { firstName: string; link: string }) {
     <p style="margin:0 0 12px;">Hi ${escapeHtml(opts.firstName)}, Spectra support sent you a link to choose a new password.</p>
     <p style="margin:0 0 28px;">${button(opts.link, "Choose a new password")}</p>
     <p style="margin:0;font-size:13px;color:#5a5246;">This link expires in 24 hours. If you didn&rsquo;t expect this, you can ignore it and your password stays the same.</p>
+  `);
+}
+
+// ── Support ──────────────────────────────────────────────────────────────────
+
+function quote(body: string) {
+  return `<div style="margin:0 0 24px;padding:12px 14px;border-left:3px solid #c4461a;background:#efe3c6;white-space:pre-wrap;">${escapeHtml(body)}</div>`;
+}
+
+/** To Spectra: a new ticket, or a customer reply on one. */
+export function ticketToStaffEmail(opts: { ref: string; subject: string; from: string; company: string | null; category: string; body: string; isReply: boolean; link: string }) {
+  return layout(`
+    <p style="margin:0 0 6px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#5a5246;">${escapeHtml(opts.ref)} &middot; ${escapeHtml(opts.category)}</p>
+    <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-weight:normal;font-size:24px;">${opts.isReply ? "New reply" : "New support request"}: ${escapeHtml(opts.subject)}</h1>
+    <p style="margin:0 0 20px;color:#5a5246;">From <strong style="color:#1b1813;">${escapeHtml(opts.from)}</strong>${opts.company ? ` &middot; ${escapeHtml(opts.company)}` : ""}</p>
+    ${quote(opts.body)}
+    <p style="margin:0;">${button(opts.link, "Open ticket")}</p>
+  `);
+}
+
+/** To the customer: we got it, or Spectra replied. */
+export function ticketToCustomerEmail(opts: { ref: string; subject: string; firstName: string; body: string | null; link: string | null }) {
+  const intro = opts.body
+    ? `Spectra support replied to your request.`
+    : `We got your request and will get back to you soon, usually within one business day.`;
+  const next = opts.link
+    ? `<p style="margin:0;">${button(opts.link, opts.body ? "Reply" : "View request")}</p>`
+    : `<p style="margin:0;font-size:14px;color:#5a5246;">Reply to this email to add anything. Please keep ${escapeHtml(opts.ref)} in the subject.</p>`;
+  return layout(`
+    <p style="margin:0 0 6px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#5a5246;">Support ${escapeHtml(opts.ref)}</p>
+    <h1 style="margin:0 0 12px;font-family:Georgia,serif;font-weight:normal;font-size:24px;">${escapeHtml(opts.subject)}</h1>
+    <p style="margin:0 0 20px;">Hi ${escapeHtml(opts.firstName)}, ${intro}</p>
+    ${opts.body ? quote(opts.body) : ""}
+    ${next}
   `);
 }

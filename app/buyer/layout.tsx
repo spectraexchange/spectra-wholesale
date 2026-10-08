@@ -14,6 +14,7 @@ export default async function BuyerLayout({ children }: { children: React.ReactN
     { href: "/buyer/cart", label: "Cart", count: cart?.length ?? 0 },
     { href: "/buyer/orders", label: "Orders" },
     { href: "/buyer/account", label: "Account" },
+    { href: "/buyer/support", label: "Support" },
   ];
 
   return (

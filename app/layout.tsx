@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { ErrorReporter } from "@/components/error-reporter";
 import { themeScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -58,7 +59,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             React logs a dev-only "script tag" warning for this; it's expected. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ErrorReporter />
+        {children}
+      </body>
     </html>
   );
 }

@@ -31,6 +31,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         >
           Request access
         </Link>
+        <p className="mt-3">
+          Trouble signing in?{" "}
+          <Link href="/support" className="underline decoration-line underline-offset-4 transition-colors hover:text-sunset hover:decoration-sunset">
+            Contact support
+          </Link>
+        </p>
       </div>
     </>
   );

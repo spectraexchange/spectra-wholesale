@@ -1,13 +1,23 @@
 import { AppShell } from "@/components/app-shell";
 import { requireSuperAdmin } from "@/lib/auth";
+import { daysAgo } from "@/lib/error-log";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const viewer = await requireSuperAdmin();
-  const { count: pending } = await createServiceClient()
-    .from("access_requests")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "pending");
+  const service = createServiceClient();
+  const [{ count: pending }, { count: openTickets }, { data: openErrors }] = await Promise.all([
+    service.from("access_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    service.from("tickets").select("*", { count: "exact", head: true }).eq("status", "open"),
+    // Distinct unresolved errors from the last week; fingerprints are counted below
+    service
+      .from("site_errors")
+      .select("fingerprint")
+      .is("resolved_at", null)
+      .gte("created_at", daysAgo(7))
+      .limit(1000),
+  ]);
+  const errorCount = new Set((openErrors ?? []).map((e) => e.fingerprint)).size;
 
   const nav = [
     { href: "/admin", label: "Overview", exact: true },
@@ -15,6 +25,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: "/admin/companies", label: "Companies" },
     { href: "/admin/orders", label: "Orders" },
     { href: "/admin/billing", label: "Billing" },
+    { href: "/admin/support", label: "Support", count: openTickets ?? 0 },
+    { href: "/admin/errors", label: "Errors", count: errorCount },
     { href: "/admin/tools", label: "Tools" },
   ];
 
