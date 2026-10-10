@@ -7,16 +7,16 @@
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --paper: #f7efdc;          /* page + panel surface */
-  --paper-deep: #efe3c6;     /* recessed surface */
+  --paper: #faf8f4;          /* page + panel surface: warm off-white */
+  --paper-deep: #f1ede5;     /* recessed surface */
   --ink: #1b1813;            /* primary text */
   --ink-soft: #5a5246;       /* secondary text */
-  --line: #d9cba8;           /* hairlines, borders */
+  --line: #e0d9cc;           /* hairlines, borders */
   --field: rgb(255 255 255 / 0.7);
   --field-focus: #ffffff;
   --sunset: #c4461a;         /* primary action */
   --sunset-hover: #a93a14;
-  --on-sunset: #f7efdc;      /* text on primary action */
+  --on-sunset: #faf8f4;      /* text on primary action */
   --press: #1b1813;          /* hard offset shadow under buttons */
   --danger: #a33a2c;
   --danger-tint: #f6ddd5;

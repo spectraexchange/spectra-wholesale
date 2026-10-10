@@ -40,13 +40,13 @@ function layout(body: string) {
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#030a14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <div style="max-width:560px;margin:40px auto;background:#f7efdc;border-radius:6px;overflow:hidden;">
-    <div style="padding:26px 36px;border-bottom:1px solid #d9cba8;">
+  <div style="max-width:560px;margin:40px auto;background:#faf8f4;border-radius:6px;overflow:hidden;">
+    <div style="padding:26px 36px;border-bottom:1px solid #e0d9cc;">
       <p style="margin:0;font-family:Georgia,serif;font-size:22px;color:#1b1813;">Spectra Wholesale</p>
       <p style="margin:4px 0 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#5a5246;">Alaska cannabis wholesale</p>
     </div>
     <div style="padding:32px 36px;color:#1b1813;font-size:15px;line-height:1.55;">${body}</div>
-    <div style="padding:18px 36px;border-top:1px solid #d9cba8;font-size:12px;color:#5a5246;">
+    <div style="padding:18px 36px;border-top:1px solid #e0d9cc;font-size:12px;color:#5a5246;">
       Questions? <a href="mailto:info@spectrawholesale.com" style="color:#c4461a;">info@spectrawholesale.com</a>
     </div>
   </div>
@@ -54,7 +54,7 @@ function layout(body: string) {
 }
 
 function button(href: string, label: string) {
-  return `<a href="${escapeHtml(href)}" style="display:inline-block;background:#c4461a;color:#f7efdc;text-decoration:none;padding:13px 28px;border-radius:3px;font-weight:600;font-size:15px;">${label} &rarr;</a>`;
+  return `<a href="${escapeHtml(href)}" style="display:inline-block;background:#c4461a;color:#faf8f4;text-decoration:none;padding:13px 28px;border-radius:3px;font-weight:600;font-size:15px;">${label} &rarr;</a>`;
 }
 
 export function inviteEmail(opts: { firstName: string; company: string; accountType: string; link: string }) {
@@ -91,9 +91,9 @@ function linesTable(lines: EmailLine[], total: string) {
   const rows = lines
     .map(
       (l) => `<tr>
-        <td style="padding:8px 0;border-bottom:1px solid #d9cba8;">${escapeHtml(l.name)}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #d9cba8;text-align:right;color:#5a5246;white-space:nowrap;">${escapeHtml(l.qty)}</td>
-        <td style="padding:8px 0 8px 16px;border-bottom:1px solid #d9cba8;text-align:right;font-family:Menlo,monospace;white-space:nowrap;">${escapeHtml(l.lineTotal)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #e0d9cc;">${escapeHtml(l.name)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #e0d9cc;text-align:right;color:#5a5246;white-space:nowrap;">${escapeHtml(l.qty)}</td>
+        <td style="padding:8px 0 8px 16px;border-bottom:1px solid #e0d9cc;text-align:right;font-family:Menlo,monospace;white-space:nowrap;">${escapeHtml(l.lineTotal)}</td>
       </tr>`,
     )
     .join("");
@@ -115,7 +115,7 @@ export function newOrderEmail(opts: {
     <h1 style="margin:0 0 6px;font-family:Georgia,serif;font-weight:normal;font-size:26px;">New order ${escapeHtml(opts.orderNumber)}</h1>
     <p style="margin:0 0 24px;color:#5a5246;">From <strong style="color:#1b1813;">${escapeHtml(opts.buyer)}</strong> &middot; deliver to ${escapeHtml(opts.deliverTo)}</p>
     ${linesTable(opts.lines, opts.total)}
-    ${opts.notes ? `<p style="margin:0 0 24px;padding:12px 14px;border-left:3px solid #c4461a;background:#efe3c6;">${escapeHtml(opts.notes)}</p>` : ""}
+    ${opts.notes ? `<p style="margin:0 0 24px;padding:12px 14px;border-left:3px solid #c4461a;background:#f1ede5;">${escapeHtml(opts.notes)}</p>` : ""}
     <p style="margin:0;">${button(opts.link, "Review and confirm")}</p>
   `);
 }
@@ -160,7 +160,7 @@ export function passwordResetEmail(opts: { firstName: string; link: string }) {
 // ── Support ──────────────────────────────────────────────────────────────────
 
 function quote(body: string) {
-  return `<div style="margin:0 0 24px;padding:12px 14px;border-left:3px solid #c4461a;background:#efe3c6;white-space:pre-wrap;">${escapeHtml(body)}</div>`;
+  return `<div style="margin:0 0 24px;padding:12px 14px;border-left:3px solid #c4461a;background:#f1ede5;white-space:pre-wrap;">${escapeHtml(body)}</div>`;
 }
 
 /** To Spectra: a new ticket, or a customer reply on one. */
