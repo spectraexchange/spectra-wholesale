@@ -7,7 +7,8 @@ import { sendBrowserError } from "@/components/error-reporter";
 // Shown when a page crashes. Server errors are already logged by instrumentation.ts;
 // browser-only ones are reported from here.
 export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
-  useEffect(() => sendBrowserError(error, "Page crashed"), [error]);
+  // After a deploy this reloads the page instead of reporting (see error-reporter.tsx)
+  useEffect(() => void sendBrowserError(error, "Page crashed"), [error]);
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-6 py-24">

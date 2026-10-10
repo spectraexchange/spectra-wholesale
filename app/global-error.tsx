@@ -6,7 +6,8 @@ import { sendBrowserError } from "@/components/error-reporter";
 // Last resort when the root layout itself fails. It replaces the whole document,
 // so global styles don't load; colors are inline (paper/ink from the palette).
 export default function GlobalError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
-  useEffect(() => sendBrowserError(error, "App crashed"), [error]);
+  // After a deploy this reloads the page instead of reporting (see error-reporter.tsx)
+  useEffect(() => void sendBrowserError(error, "App crashed"), [error]);
 
   return (
     <html lang="en">
