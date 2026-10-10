@@ -24,14 +24,15 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <LoginForm notice={notice && <Notice tone={notice.tone}>{notice.text}</Notice>} />
 
       <div className="mt-8 border-t border-line pt-6 text-sm text-ink-soft">
-        New to Spectra?{" "}
+        <p className="font-mono text-[11px] tracking-[0.16em] uppercase">New to Spectra?</p>
+        <p className="mt-2 font-display text-xl leading-snug text-ink">Send us your menu. We&rsquo;ll build your store.</p>
         <Link
           href="/request-access"
-          className="font-medium text-ink underline decoration-sunset decoration-2 underline-offset-4 transition-colors hover:text-sunset"
+          className="mt-2 inline-block font-medium text-ink underline decoration-sunset decoration-2 underline-offset-4 transition-colors hover:text-sunset"
         >
-          Request access
+          Request access &rarr;
         </Link>
-        <p className="mt-3">
+        <p className="mt-5">
           Trouble signing in?{" "}
           <Link href="/support" className="underline decoration-line underline-offset-4 transition-colors hover:text-sunset hover:decoration-sunset">
             Contact support
