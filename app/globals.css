@@ -60,6 +60,7 @@
   --teal: #1f5c66;
   --amber: #f2a531;
   --sunset-bright: #e8551c;
+  --alert: #c42a1d;           /* count pips on the night nav */
 }
 
 @theme inline {
@@ -75,6 +76,7 @@
   --color-on-sunset: var(--on-sunset);
   --color-press: var(--press);
   --color-sunset-bright: var(--sunset-bright);
+  --color-alert: var(--alert);
   --color-cream: var(--cream);
   --color-amber: var(--amber);
   --color-teal: var(--teal);

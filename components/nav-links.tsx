@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type NavItem = { href: string; label: string; count?: number; exact?: boolean };
+// `alert` shows the count as a red pip: things waiting on you (tickets, requests, errors).
+export type NavItem = { href: string; label: string; count?: number; exact?: boolean; alert?: boolean };
 
 export function NavLinks({ items, className = "" }: { items: NavItem[]; className?: string }) {
   const pathname = usePathname();
@@ -22,7 +23,15 @@ export function NavLinks({ items, className = "" }: { items: NavItem[]; classNam
             }`}
           >
             {item.label}
-            {!!item.count && <span className="ml-1.5 font-mono text-[12px] text-amber">{item.count}</span>}
+            {!!item.count &&
+              (item.alert ? (
+                <span className="ml-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-alert px-1.5 font-mono text-[11px] leading-none font-semibold text-cream">
+                  {item.count > 99 ? "99+" : item.count}
+                  <span className="sr-only"> waiting</span>
+                </span>
+              ) : (
+                <span className="ml-1.5 font-mono text-[12px] text-amber">{item.count}</span>
+              ))}
           </Link>
         );
       })}

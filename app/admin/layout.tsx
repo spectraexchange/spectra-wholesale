@@ -21,12 +21,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const nav = [
     { href: "/admin", label: "Overview", exact: true },
-    { href: "/admin/access-requests", label: "Requests", count: pending ?? 0 },
+    { href: "/admin/access-requests", label: "Requests", count: pending ?? 0, alert: true },
     { href: "/admin/companies", label: "Companies" },
     { href: "/admin/orders", label: "Orders" },
     { href: "/admin/billing", label: "Billing" },
-    { href: "/admin/support", label: "Support", count: openTickets ?? 0 },
-    { href: "/admin/errors", label: "Errors", count: errorCount },
+    { href: "/admin/support", label: "Support", count: openTickets ?? 0, alert: true },
+    { href: "/admin/errors", label: "Errors", count: errorCount, alert: true },
     { href: "/admin/tools", label: "Tools" },
   ];
 

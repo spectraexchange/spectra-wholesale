@@ -2,13 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { getViewer, requireSuperAdmin, type Viewer } from "@/lib/auth";
 import { ADMIN_EMAIL, sendEmail, ticketToCustomerEmail, ticketToStaffEmail } from "@/lib/email";
 import { createServiceClient } from "@/lib/supabase/server";
 import { MAX_MESSAGE, TICKET_CATEGORIES, TICKET_STATUSES, categoryName, ticketRef, type Ticket, type TicketStatus } from "@/lib/support";
 
-export type SupportFormState = { ok?: string; error?: string; fieldErrors?: Record<string, string> };
+export type SupportFormState = {
+  ok?: string;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+  /** Set when a new ticket goes through; the form swaps itself for a confirmation. */
+  received?: { ref: string | null; email: string | null; href: string | null };
+};
 
 const text = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 const origin = async () => (await headers()).get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
@@ -36,7 +41,7 @@ function refreshTicket(id: string) {
 /** New ticket from a signed-in buyer/vendor, or from the public form (name + email). */
 export async function createTicket(_prev: SupportFormState, formData: FormData): Promise<SupportFormState> {
   // Bots fill every field; people never see this one.
-  if (text(formData, "website")) return { ok: "Thanks. We got your request." };
+  if (text(formData, "website")) return { received: { ref: null, email: null, href: null } };
 
   const viewer = await getViewer();
   const base = customerBase(viewer);
@@ -112,8 +117,8 @@ export async function createTicket(_prev: SupportFormState, formData: FormData):
   ]);
 
   revalidatePath("/admin", "layout");
-  if (base) redirect(`${base}/support/${ticket.id}`);
-  return { ok: `Thanks, we got it. Your request number is ${ref}, and we’ll email ${who.email} when we reply.` };
+  if (base) revalidatePath(`${base}/support`);
+  return { received: { ref, email: who.email, href: base ? `${base}/support/${ticket.id}` : null } };
 }
 
 /** Buyer/vendor adds to their own ticket; reopens it if it was answered or closed. */
