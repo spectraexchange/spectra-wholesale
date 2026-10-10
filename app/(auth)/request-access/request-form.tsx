@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useActionState, useRef, useState, startTransition } from "react";
 import { Field, FieldError, Label, Notice, SubmitButton, TextArea, useLiveErrors } from "@/components/form";
-import { LICENSE_BUCKET, LICENSE_DOCS, docContentType, type LicenseDocKey } from "@/lib/access-requests";
+import { LICENSE_BUCKET, LICENSE_DOCS, MENU_BUCKET, MENU_MAX_BYTES, docContentType, type LicenseDocKey } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/client";
-import { createUploadSlot, submitRequest, type RequestState } from "./actions";
+import { createMenuUploadSlot, createUploadSlot, submitRequest, type RequestState } from "./actions";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -17,7 +17,8 @@ const ACCOUNT_TYPES = [
 export function RequestForm() {
   const [accountType, setAccountType] = useState<"buyer" | "seller">("buyer");
   const [files, setFiles] = useState<Partial<Record<LicenseDocKey, File>>>({});
-  const [uploadError, setUploadError] = useState<Partial<Record<LicenseDocKey, string>>>({});
+  const [menu, setMenu] = useState<File>();
+  const [uploadError, setUploadError] = useState<Partial<Record<LicenseDocKey | "menu_path", string>>>({});
   // Each chosen File is uploaded once; retries after a validation error reuse the stored path.
   const uploaded = useRef(new Map<File, string>());
 
@@ -40,6 +41,21 @@ export function RequestForm() {
         uploaded.current.set(file, path);
       }
       formData.set(key, path);
+    }
+
+    if (menu && accountType === "seller") {
+      let path = uploaded.current.get(menu);
+      if (!path) {
+        const slot = await createMenuUploadSlot(menu.name.split(".").pop() ?? "");
+        if ("error" in slot) return { fieldErrors: { menu_path: slot.error }, error: "Check the highlighted fields." };
+        const { error } = await supabase.storage
+          .from(MENU_BUCKET)
+          .uploadToSignedUrl(slot.path, slot.token, menu, { contentType: docContentType(menu) });
+        if (error) return { fieldErrors: { menu_path: "Upload failed. Try again." }, error: "Check the highlighted fields." };
+        path = slot.path;
+        uploaded.current.set(menu, path);
+      }
+      formData.set("menu_path", path);
     }
 
     return submitRequest(prev, formData);
@@ -150,12 +166,36 @@ export function RequestForm() {
                   return;
                 }
                 setUploadError((prev) => ({ ...prev, [key]: undefined }));
-              markEdited(key);
+                markEdited(key);
                 setFiles((prev) => ({ ...prev, [key]: file ?? undefined }));
               }}
             />
           ))}
         </Section>
+
+        {accountType === "seller" && (
+          <Section
+            title="Your menu"
+            note="Optional. Send your current menu or product list and we’ll build your store for you. Excel, CSV, PDF or photos, up to 25 MB."
+          >
+            <FilePicker
+              name="menu_path"
+              label="Menu or product list"
+              accept=".xlsx,.xls,.csv,.pdf,.jpg,.jpeg,.png,.heic,.webp,application/pdf,image/*,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              file={menu}
+              error={errors.menu_path}
+              onChange={(file) => {
+                if (file && file.size > MENU_MAX_BYTES) {
+                  setUploadError((prev) => ({ ...prev, menu_path: "That file is over 25 MB." }));
+                  return;
+                }
+                setUploadError((prev) => ({ ...prev, menu_path: undefined }));
+                markEdited("menu_path");
+                setMenu(file ?? undefined);
+              }}
+            />
+          </Section>
+        )}
 
         <TextArea label="Anything else?" name="message" rows={2} hint={<span className="text-xs text-ink-soft">Optional</span>} />
 
@@ -206,12 +246,14 @@ function Section({ title, note, children }: { title: string; note?: string; chil
 function FilePicker({
   name,
   label,
+  accept = ".pdf,.jpg,.jpeg,.png,.heic,.webp,application/pdf,image/*",
   file,
   error,
   onChange,
 }: {
   name: string;
   label: string;
+  accept?: string;
   file?: File;
   error?: string;
   onChange: (file: File | null) => void;
@@ -228,7 +270,7 @@ function FilePicker({
         <input
           id={id}
           type="file"
-          accept=".pdf,.jpg,.jpeg,.png,.heic,.webp,application/pdf,image/*"
+          accept={accept}
           className="sr-only"
           aria-invalid={error ? true : undefined}
           onChange={(e) => onChange(e.target.files?.[0] ?? null)}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LICENSE_BUCKET, LICENSE_DOCS, formatPhone, type LicenseDocKey } from "@/lib/access-requests";
+import { LICENSE_BUCKET, LICENSE_DOCS, MENU_BUCKET, formatPhone, type LicenseDocKey } from "@/lib/access-requests";
 import { createServiceClient } from "@/lib/supabase/server";
 import { RequestActions } from "./request-actions";
 import { requireSuperAdmin } from "@/lib/auth";
@@ -28,6 +28,7 @@ type AccessRequest = {
   biz_license_path: string | null;
   mj_license_url: string | null;
   biz_license_url: string | null;
+  menu_path?: string | null;
   message: string | null;
 };
 
@@ -45,7 +46,11 @@ export default async function AccessRequestsPage() {
   const { data: signed } = paths.length
     ? await service.storage.from(LICENSE_BUCKET).createSignedUrls(paths, 60 * 10)
     : { data: [] };
-  const urlFor = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
+  const menuPaths = requests.map((r) => r.menu_path).filter((p): p is string => !!p);
+  const { data: signedMenus } = menuPaths.length
+    ? await service.storage.from(MENU_BUCKET).createSignedUrls(menuPaths, 60 * 10)
+    : { data: [] };
+  const urlFor = new Map([...(signed ?? []), ...(signedMenus ?? [])].map((s) => [s.path, s.signedUrl]));
 
   const pending = requests.filter((r) => r.status === "pending");
   const reviewed = requests.filter((r) => r.status !== "pending");
@@ -141,6 +146,17 @@ function RequestRow({ request: r, urlFor }: { request: AccessRequest; urlFor: Ma
               )}
             </span>
           </Item>
+          {r.account_type === "seller" && (
+            <Item label="Menu">
+              {r.menu_path && urlFor.get(r.menu_path) ? (
+                <a href={urlFor.get(r.menu_path)!} target="_blank" rel="noreferrer" className="text-sunset underline underline-offset-4 hover:text-sunset-hover">
+                  Download menu ({r.menu_path.split(".").pop()?.toUpperCase()}) &#8599;
+                </a>
+              ) : (
+                <Missing />
+              )}
+            </Item>
+          )}
           {r.message && <Item label="Message">{r.message}</Item>}
         </dl>
       </div>

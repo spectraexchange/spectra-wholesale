@@ -61,6 +61,7 @@ export async function approveRequest(requestId: string): Promise<ActionResult> {
       delivery_instructions: req.delivery_instructions,
       mj_license_path: req.mj_license_path,
       biz_license_path: req.biz_license_path,
+      ...(req.menu_path && { menu_path: req.menu_path }),
       is_approved: true,
       is_active: true,
     })

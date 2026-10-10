@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ORDER_SELECT, OrderList, type OrderWithParties } from "@/components/orders";
-import { LICENSE_BUCKET, LICENSE_DOCS, type LicenseDocKey } from "@/lib/access-requests";
+import { LICENSE_BUCKET, LICENSE_DOCS, MENU_BUCKET, type LicenseDocKey } from "@/lib/access-requests";
 import { AUDIT_LABELS } from "@/lib/audit";
 import { SUBSCRIPTION_STATUSES, alaskaToday, formatDate, type Payment, type Subscription } from "@/lib/billing";
 import { categoryLabel, formatMoney, unitLabel } from "@/lib/catalog";
@@ -47,6 +47,7 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
   const docPaths = (Object.keys(LICENSE_DOCS) as LicenseDocKey[]).map((k) => company[k]).filter(Boolean) as string[];
   const { data: signed } = docPaths.length ? await service.storage.from(LICENSE_BUCKET).createSignedUrls(docPaths, 60 * 10) : { data: [] };
   const urlFor = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
+  const { data: menu } = company.menu_path ? await service.storage.from(MENU_BUCKET).createSignedUrl(company.menu_path, 60 * 10) : { data: null };
   const live = (products ?? []).filter((p) => p.is_active && !p.is_archived);
   const sales = ((orders ?? []) as OrderWithParties[]).filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.total), 0);
   const status = subscription?.status;
@@ -128,6 +129,14 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
                 >
                   Import from a spreadsheet &rarr;
                 </Link>
+                {menu?.signedUrl && (
+                  <>
+                    <span className="text-ink-soft"> &middot; </span>
+                    <a href={menu.signedUrl} target="_blank" rel="noreferrer" className="text-sunset underline underline-offset-4 hover:text-sunset-hover">
+                      Menu they sent &#8599;
+                    </a>
+                  </>
+                )}
                 <span className="text-ink-soft"> &middot; to add or edit one product, use View as on a user above.</span>
               </p>
               {products?.length ? (

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { Notice } from "@/components/form";
+import { RETURNING_COOKIE } from "@/lib/returning";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign in · Spectra Wholesale" };
@@ -15,11 +17,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { error, message } = await searchParams;
   const key = typeof error === "string" ? error : typeof message === "string" ? message : undefined;
   const notice = key ? NOTICES[key] : undefined;
+  const returning = (await cookies()).has(RETURNING_COOKIE);
 
   return (
     <>
-      <h1 className="font-display text-[2.1rem] leading-tight font-normal tracking-tight">Sign in</h1>
-      <p className="mt-2 mb-8 text-[15px] text-ink-soft">Welcome back.</p>
+      <h1 className={`font-display text-[2.1rem] leading-tight font-normal tracking-tight ${returning ? "" : "mb-8"}`}>Sign in</h1>
+      {returning && <p className="mt-2 mb-8 text-[15px] text-ink-soft">Welcome back.</p>}
 
       <LoginForm notice={notice && <Notice tone={notice.tone}>{notice.text}</Notice>} />
 

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { RETURNING_COOKIE } from "@/lib/returning";
 
 // Signed-in users skip these; everyone else is sent to /login from PROTECTED.
 const AUTH_PAGES = ["/login", "/forgot-password", "/request-access"];
@@ -30,6 +31,18 @@ export async function proxy(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Remembers this browser has signed in before, so /login can say "Welcome back."
+  // Outlives sign-out on purpose; it holds no personal data.
+  if (user && !request.cookies.has(RETURNING_COOKIE)) {
+    response.cookies.set(RETURNING_COOKIE, "1", {
+      maxAge: 60 * 60 * 24 * 365,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+  }
   const { pathname } = request.nextUrl;
   const matches = (paths: string[]) => paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 

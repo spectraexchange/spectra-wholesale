@@ -12,10 +12,28 @@ export type LicenseDocKey = keyof typeof LICENSE_DOCS;
 
 export const ALLOWED_DOC_EXTENSIONS = ["pdf", "jpg", "jpeg", "png", "heic", "webp"];
 
+// Optional vendor menu: spreadsheet, PDF or photos of the menu, in its own private bucket.
+export const MENU_BUCKET = "vendor-menus";
+export const MENU_EXTENSIONS = ["csv", "xlsx", "xls", "pdf", "jpg", "jpeg", "png", "heic", "webp"];
+export const MENU_MAX_BYTES = 25 * 1024 * 1024;
+
 // Some phones send HEIC photos with no MIME type, which the bucket rejects; fall back to the extension.
-const DOC_TYPES: Record<string, string> = { pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", heic: "image/heic", webp: "image/webp" };
+const DOC_TYPES: Record<string, string> = {
+  pdf: "application/pdf",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  heic: "image/heic",
+  webp: "image/webp",
+  csv: "text/csv",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+};
+// Windows often labels CSVs as Excel files; the extension is more reliable for spreadsheets.
 export function docContentType(file: File) {
-  return file.type || DOC_TYPES[file.name.split(".").pop()?.toLowerCase() ?? ""] || undefined;
+  const byExtension = DOC_TYPES[file.name.split(".").pop()?.toLowerCase() ?? ""];
+  if (byExtension && !byExtension.startsWith("image/") && byExtension !== "application/pdf") return byExtension;
+  return file.type || byExtension || undefined;
 }
 
 export type AccessRequestInput = {
@@ -33,6 +51,7 @@ export type AccessRequestInput = {
   delivery_instructions: string | null;
   mj_license_path: string;
   biz_license_path: string;
+  menu_path: string | null;
   message: string | null;
 };
 
@@ -40,6 +59,7 @@ export type FieldErrors = Partial<Record<keyof AccessRequestInput, string>>;
 
 // requests/<uuid>/<doc>.<ext>, as issued by createUploadSlots
 const DOC_PATH = /^requests\/[0-9a-f-]{36}\/(mj|biz)-license\.[a-z]+$/;
+const MENU_PATH = /^requests\/[0-9a-f-]{36}\/menu\.[a-z]+$/;
 
 export function parseAccessRequest(formData: FormData): { data?: AccessRequestInput; errors: FieldErrors } {
   const text = (key: string) => String(formData.get(key) ?? "").trim();
@@ -62,6 +82,7 @@ export function parseAccessRequest(formData: FormData): { data?: AccessRequestIn
     delivery_instructions: accountType === "buyer" ? optional("delivery_instructions") : null,
     mj_license_path: text("mj_license_path"),
     biz_license_path: text("biz_license_path"),
+    menu_path: accountType === "seller" ? optional("menu_path") : null,
     message: optional("message"),
   };
 
@@ -89,6 +110,8 @@ export function parseAccessRequest(formData: FormData): { data?: AccessRequestIn
     if (!data[key]) errors[key] = "Upload this document.";
     else if (!DOC_PATH.test(data[key])) errors[key] = "Upload failed. Choose the file again.";
   }
+
+  if (data.menu_path && !MENU_PATH.test(data.menu_path)) errors.menu_path = "Upload failed. Choose the file again.";
 
   return Object.keys(errors).length ? { errors } : { data, errors };
 }

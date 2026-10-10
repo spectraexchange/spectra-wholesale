@@ -5,6 +5,8 @@ import {
   ALLOWED_DOC_EXTENSIONS,
   LICENSE_BUCKET,
   LICENSE_DOCS,
+  MENU_BUCKET,
+  MENU_EXTENSIONS,
   parseAccessRequest,
   type FieldErrors,
   type LicenseDocKey,
@@ -25,6 +27,16 @@ export async function createUploadSlot(doc: LicenseDocKey, extension: string): P
   const path = `requests/${crypto.randomUUID()}/${doc === "mj_license_path" ? "mj" : "biz"}-license.${ext}`;
   const { data, error } = await createServiceClient().storage.from(LICENSE_BUCKET).createSignedUploadUrl(path);
 
+  if (error || !data) return { error: "Couldn’t start the upload. Try again." };
+  return { path: data.path, token: data.token };
+}
+
+export async function createMenuUploadSlot(extension: string): Promise<UploadSlot | { error: string }> {
+  const ext = extension.toLowerCase().replace(/^\./, "");
+  if (!MENU_EXTENSIONS.includes(ext)) return { error: "Upload a spreadsheet (Excel or CSV), a PDF, or a photo." };
+
+  const path = `requests/${crypto.randomUUID()}/menu.${ext}`;
+  const { data, error } = await createServiceClient().storage.from(MENU_BUCKET).createSignedUploadUrl(path);
   if (error || !data) return { error: "Couldn’t start the upload. Try again." };
   return { path: data.path, token: data.token };
 }
@@ -64,8 +76,18 @@ export async function submitRequest(_prev: RequestState, formData: FormData): Pr
     }
   }
 
+  const { menu_path, ...request } = data;
+  if (menu_path) {
+    const folder = menu_path.slice(0, menu_path.lastIndexOf("/"));
+    const { data: files } = await service.storage.from(MENU_BUCKET).list(folder);
+    if (!files?.some((f) => `${folder}/${f.name}` === menu_path)) {
+      return { fieldErrors: { menu_path: "Upload didn’t finish. Choose the file again." } };
+    }
+  }
+
   const { error } = await service.from("access_requests").insert({
-    ...data,
+    ...request,
+    ...(menu_path && { menu_path }),
     full_name: `${data.first_name} ${data.last_name}`,
     status: "pending",
   });
