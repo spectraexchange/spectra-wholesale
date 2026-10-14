@@ -5,6 +5,10 @@
 Alaska-only B2B cannabis wholesale marketplace. Buyers (retailers) order from vendors (cultivators/processors).
 Roles: `buyer`, `buyer_admin`, `seller`, `seller_admin`, `super_admin`.
 
+**Read `ROADMAP.md` at the start of a session.** It has current status, the work queue, and decisions
+already made (Metrc plan, backups, team invites). Update it when something ships or a plan changes,
+and commit it with the work.
+
 ## Design system — the login page is the reference
 
 The owner approved the auth pages (`app/(auth)/`) as the look for the whole app, including the
