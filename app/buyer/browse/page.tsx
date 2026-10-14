@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StrainInfo } from "@/components/strain-badge";
+import { VendorLogo } from "@/components/vendor-logo";
 import { CATEGORIES, categoryLabel, formatMoney, subCategoryLabel, unitLabel } from "@/lib/catalog";
 import { AddToCart } from "../add-to-cart";
 import { catalogQuery, toCatalogProduct, type CatalogProduct } from "../catalog";
@@ -41,6 +42,7 @@ export default async function BrowsePage({ searchParams }: PageProps<"/buyer/bro
   };
 
   const presentCategories = CATEGORIES.filter((c) => all.some((p) => p.category === c.value));
+  const store = vendorId ? vendors.find((v) => v.id === vendorId) : undefined;
 
   return (
     <>
@@ -86,6 +88,25 @@ export default async function BrowsePage({ searchParams }: PageProps<"/buyer/bro
           </button>
         </form>
       </div>
+
+      {/* Filtering by one vendor shows their storefront */}
+      {store && (
+        <div className="mt-10 flex items-center gap-5 border-y border-line py-5">
+          <VendorLogo name={store.name} logoUrl={store.logo_url} size="lg" />
+          <div className="min-w-0">
+            <p className="font-mono text-[11px] tracking-[0.16em] text-ink-soft uppercase">
+              Vendor{store.city && <> &middot; {store.city}</>}
+            </p>
+            <h2 className="mt-1 truncate font-display text-3xl">{store.name}</h2>
+            <p className="mt-1 text-[13px] text-ink-soft">
+              {all.filter((p) => p.vendor.id === store.id).length} products &middot;{" "}
+              <Link href={href({ vendor: "" })} className="underline underline-offset-4 hover:text-sunset">
+                All vendors
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
 
       <nav className="mt-10 flex gap-6 overflow-x-auto border-b border-ink" aria-label="Categories">
         {[{ value: "", label: "All" }, ...presentCategories].map((c) => {
@@ -147,7 +168,10 @@ function ProductTile({ product: p }: { product: CatalogProduct }) {
             {categoryLabel(p.category)}
           </div>
         )}
-        <p className="mt-4 font-mono text-[10px] tracking-[0.16em] text-ink-soft uppercase">{p.vendor.name}</p>
+        <p className="mt-4 flex items-center gap-2 font-mono text-[10px] tracking-[0.16em] text-ink-soft uppercase">
+          {p.vendor.logo_url && <VendorLogo name={p.vendor.name} logoUrl={p.vendor.logo_url} size="xs" />}
+          <span className="truncate">{p.vendor.name}</span>
+        </p>
         <h2 className="mt-1 font-display text-xl leading-snug group-hover:text-sunset">{p.name}</h2>
         <p className="mt-1 text-[13px] text-ink-soft">{detail}</p>
         <div className="mt-2 min-h-5">

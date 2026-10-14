@@ -10,7 +10,7 @@ export type CartLine = {
 };
 
 export type VendorCart = {
-  vendor: { id: string; name: string; city: string | null };
+  vendor: { id: string; name: string; city: string | null; logo_url: string | null };
   lines: CartLine[];
   subtotal: number;
   canCheckout: boolean;
@@ -27,7 +27,7 @@ type Row = {
 export async function loadCart(buyerProfileId: string, sellerId?: string): Promise<VendorCart[]> {
   const { data } = await createServiceClient()
     .from("cart_items")
-    .select("id, quantity, product:products(*, vendor:companies(id, name, city, is_active, is_approved))")
+    .select("id, quantity, product:products(*, vendor:companies(id, name, city, logo_url, is_active, is_approved))")
     .eq("buyer_profile_id", buyerProfileId)
     .order("created_at");
 
@@ -50,7 +50,7 @@ export async function loadCart(buyerProfileId: string, sellerId?: string): Promi
               : null;
 
     const group = groups.get(p.vendor.id) ?? {
-      vendor: { id: p.vendor.id, name: p.vendor.name, city: p.vendor.city },
+      vendor: { id: p.vendor.id, name: p.vendor.name, city: p.vendor.city, logo_url: p.vendor.logo_url },
       lines: [],
       subtotal: 0,
       canCheckout: true,

@@ -1,6 +1,8 @@
 import { InvoiceSettingsForm } from "@/app/seller/account/invoice-settings-form";
+import { LogoForm } from "@/app/seller/account/logo-form";
 import { CompanyForm, PasswordForm, ProfileForm } from "@/components/account-forms";
 import { LicenseDocs } from "@/components/license-docs";
+import { VendorLogo } from "@/components/vendor-logo";
 import { LICENSE_BUCKET, LICENSE_DOCS, type LicenseDocKey } from "@/lib/access-requests";
 import type { Viewer } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -88,13 +90,25 @@ export async function AccountPage({ viewer }: { viewer: Viewer & { company: NonN
 
           {!isBuyer && (
             <Section
+              title="Brand logo"
+              note={isAdmin ? "Buyers see it on your storefront, products, cart, checkout and invoices." : "Only your company’s admin can change the logo."}
+            >
+              {isAdmin ? (
+                <LogoForm companyName={company?.name ?? viewer.company.name} logoUrl={company?.logo_url ?? ""} />
+              ) : (
+                <VendorLogo name={company?.name ?? viewer.company.name} logoUrl={company?.logo_url} size="lg" />
+              )}
+            </Section>
+          )}
+
+          {!isBuyer && (
+            <Section
               title="Invoice"
               note={isAdmin ? "Printed on every invoice buyers see from you." : "Only your company’s admin can change these."}
             >
               {isAdmin ? (
                 <InvoiceSettingsForm
                   settings={{
-                    logo_url: company?.logo_url ?? "",
                     invoice_payable_to: company?.invoice_payable_to ?? "",
                     invoice_terms: company?.invoice_terms ?? "",
                     invoice_turnaround: company?.invoice_turnaround ?? "",

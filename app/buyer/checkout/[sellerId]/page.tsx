@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { VendorLogo } from "@/components/vendor-logo";
 import { redirect } from "next/navigation";
 import { requireBuyer } from "@/lib/auth";
 import { formatMoney, formatQty } from "@/lib/catalog";
@@ -31,8 +32,11 @@ export default async function CheckoutPage({ params }: PageProps<"/buyer/checkou
         &larr; Cart
       </Link>
       <h1 className="mt-3 font-display text-5xl font-light tracking-tight">Check out</h1>
-      <p className="mt-3 text-ink-soft">
-        Order from <span className="text-ink">{cart.vendor.name}</span>. Other vendors in your cart stay put.
+      <p className="mt-4 flex items-center gap-3 text-ink-soft">
+        <VendorLogo name={cart.vendor.name} logoUrl={cart.vendor.logo_url} />
+        <span>
+          Order from <span className="text-ink">{cart.vendor.name}</span>. Other vendors in your cart stay put.
+        </span>
       </p>
 
       <div className="mt-12 grid gap-14 lg:grid-cols-[minmax(0,1fr)_24rem]">

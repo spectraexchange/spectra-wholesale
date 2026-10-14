@@ -1,10 +1,10 @@
 import type { Product } from "@/lib/catalog";
 import { createServiceClient } from "@/lib/supabase/server";
 
-export type Vendor = { id: string; name: string; city: string | null };
+export type Vendor = { id: string; name: string; city: string | null; logo_url: string | null };
 export type CatalogProduct = Product & { vendor: Vendor };
 
-const SELECT = "*, vendor:companies!inner(id, name, city, type, is_active, is_approved)";
+const SELECT = "*, vendor:companies!inner(id, name, city, logo_url, type, is_active, is_approved)";
 
 // Products buyers can see and order: visible, not archived, from approved, active vendors.
 export function catalogQuery() {

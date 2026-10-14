@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StrainInfo } from "@/components/strain-badge";
+import { VendorLogo } from "@/components/vendor-logo";
 import { CONTAINER_TYPES, categoryLabel, formatMoney, formatQty, subCategoryLabel, unitLabel } from "@/lib/catalog";
 import { AddToCart } from "../../add-to-cart";
 import { catalogQuery, toCatalogProduct } from "../../catalog";
@@ -44,10 +45,13 @@ export default async function BuyerProductPage({ params }: PageProps<"/buyer/pro
         <div>
           <Link
             href={`/buyer/browse?vendor=${p.vendor.id}`}
-            className="font-mono text-[11px] tracking-[0.18em] text-ink-soft uppercase hover:text-sunset"
+            className="inline-flex items-center gap-3 font-mono text-[11px] tracking-[0.18em] text-ink-soft uppercase hover:text-sunset"
           >
-            {p.vendor.name}
-            {p.vendor.city && <> &middot; {p.vendor.city}</>}
+            <VendorLogo name={p.vendor.name} logoUrl={p.vendor.logo_url} size="sm" />
+            <span>
+              {p.vendor.name}
+              {p.vendor.city && <> &middot; {p.vendor.city}</>}
+            </span>
           </Link>
           <h1 className="mt-2 font-display text-4xl leading-tight font-light tracking-tight sm:text-5xl">{p.name}</h1>
           <div className="mt-4">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { VendorLogo } from "@/components/vendor-logo";
 import { requireBuyer } from "@/lib/auth";
 import { formatMoney, unitLabel } from "@/lib/catalog";
 import { loadCart } from "./load-cart";
@@ -31,9 +32,16 @@ export default async function CartPage() {
         <div className="mt-10 space-y-16">
           {carts.map((cart) => (
             <section key={cart.vendor.id}>
-              <div className="flex items-baseline justify-between gap-4 border-b border-ink pb-3">
-                <h2 className="font-display text-2xl">{cart.vendor.name}</h2>
-                {cart.vendor.city && <p className="font-mono text-[11px] tracking-[0.16em] text-ink-soft uppercase">{cart.vendor.city}</p>}
+              <div className="flex items-center gap-4 border-b border-ink pb-3">
+                <VendorLogo name={cart.vendor.name} logoUrl={cart.vendor.logo_url} />
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate font-display text-2xl">
+                    <Link href={`/buyer/browse?vendor=${cart.vendor.id}`} className="hover:text-sunset">
+                      {cart.vendor.name}
+                    </Link>
+                  </h2>
+                  {cart.vendor.city && <p className="font-mono text-[11px] tracking-[0.16em] text-ink-soft uppercase">{cart.vendor.city}</p>}
+                </div>
               </div>
 
               <ul className="divide-y divide-line">
