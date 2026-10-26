@@ -2,7 +2,7 @@
 
 Where the project stands, what's queued, and decisions already made. Kept in the
 repo so it's the same on every computer. Update it when something ships or a
-plan changes. Last updated 2026-11-03.
+plan changes. Last updated 2026-10-26.
 
 ## Status
 
@@ -46,7 +46,7 @@ arrives: Pro projects don't pause.
    last admin). Super admin can do the same from admin → Company → Users. Show
    "placed by" on orders. Stay with two roles until customers ask for more.
 
-3. **Nightly off-site backups: built 2026-11-03, waiting on setup.** The job is
+3. **Nightly off-site backups: built 2026-10-26, waiting on setup.** The job is
    `.github/workflows/nightly-backup.yml` (database dump + every Storage bucket →
    encrypted "Spectra Backups" folder in Google Drive via rclone; 30 daily + 12
    monthly database copies; failures email via GitHub and log to admin →
