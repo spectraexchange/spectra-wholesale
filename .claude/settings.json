@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; before=$(git rev-parse HEAD 2>/dev/null); if out=$(git pull --ff-only --quiet 2>&1); then after=$(git rev-parse HEAD); [ \"$before\" != \"$after\" ] && printf \"{\\\"systemMessage\\\":\\\"Pulled %s new commit(s) from GitHub.\\\"}\" \"$(git rev-list --count \"$before..$after\")\"; else printf \"{\\\"systemMessage\\\":\\\"Could not auto-pull from GitHub (the two computers may have different unpushed work). Run git status before editing.\\\"}\"; fi; exit 0",
+            "timeout": 30,
+            "statusMessage": "Pulling latest from GitHub\u2026"
+          }
+        ]
+      }
+    ]
+  }
+}

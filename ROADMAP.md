@@ -102,3 +102,7 @@ review Metrc's API Terms for data-use rules before building.
 - Earlier attempts in `~/spectra-wholesale`, `~/Documents/spectra-exchange` and
   `~/highmarket-demo` are stale; this repo is the only live codebase.
 - `.env.local` is not in git. Keep a copy in a password manager.
+- Two computers: `.claude/settings.json` runs `git pull --ff-only` at the start
+  of every Claude Code session (warns instead of merging if both machines have
+  unpushed work), and `.vscode/settings.json` turns on background fetch so
+  VS Code shows incoming commits. Push before switching computers.
