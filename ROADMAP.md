@@ -2,7 +2,7 @@
 
 Where the project stands, what's queued, and decisions already made. Kept in the
 repo so it's the same on every computer. Update it when something ships or a
-plan changes. Last updated 2026-10-13.
+plan changes. Last updated 2026-10-26.
 
 ## Status
 
@@ -20,6 +20,11 @@ on 2026-10-08, emails included.
 
 All migrations in `supabase/migrations/` through `20261009_vendor_menus.sql`
 have been run on the live database.
+
+`/api/health` runs a tiny database query and reports up/down. Vercel Cron calls
+it daily at 18:00 UTC (`vercel.json`), which also keeps Supabase from seeing the
+project as idle. Check the plan in Supabase → Billing if a pause warning ever
+arrives: Pro projects don't pause.
 
 ## Queue (in order)
 
