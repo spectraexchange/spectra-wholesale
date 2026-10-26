@@ -2,7 +2,7 @@
 
 Where the project stands, what's queued, and decisions already made. Kept in the
 repo so it's the same on every computer. Update it when something ships or a
-plan changes. Last updated 2026-10-26.
+plan changes. Last updated 2026-11-03.
 
 ## Status
 
@@ -46,17 +46,13 @@ arrives: Pro projects don't pause.
    last admin). Super admin can do the same from admin → Company → Users. Show
    "placed by" on orders. Stay with two roles until customers ask for more.
 
-3. **Nightly off-site backups.** GitHub Actions job around 2 AM Alaska time:
-   compressed database dump + incremental copy of every Storage bucket,
-   encrypted with the owner's passphrase, uploaded to a "Spectra Backups"
-   Google Drive folder (keep 30 daily + 12 monthly database copies). Failures
-   email via GitHub and log to admin → Errors. "Run now" button via
-   `workflow_dispatch`. Needs from the owner, all as GitHub Secrets (never
-   pasted in chat or committed): Supabase database connection string, one-time
-   Google sign-in for the Drive upload, encryption passphrase. Finish with one
-   test restore into a scratch Supabase project. Expected size: database
-   5–15 MB per copy; files ~5–12 GB at full Alaska adoption. (Supabase Pro
-   already keeps 7 days of database-only backups.)
+3. **Nightly off-site backups: built 2026-11-03, waiting on setup.** The job is
+   `.github/workflows/nightly-backup.yml` (database dump + every Storage bucket →
+   encrypted "Spectra Backups" folder in Google Drive via rclone; 30 daily + 12
+   monthly database copies; failures email via GitHub and log to admin →
+   Errors). Setup and restore steps: `docs/BACKUPS.md`. Remaining: owner adds
+   the GitHub Secrets, runs it once by hand, then one test restore into a
+   scratch Supabase project.
 
 4. **Metrc integration, Phase 1.** See "Metrc" below.
 

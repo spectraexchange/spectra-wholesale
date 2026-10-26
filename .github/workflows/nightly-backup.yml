@@ -1,0 +1,109 @@
+# Nightly off-site backup: database + every Storage bucket → Google Drive,
+# encrypted with the owner's passphrase. Restore steps: docs/BACKUPS.md.
+#
+# Secrets (GitHub → Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL            Session pooler connection string (with password)
+#   SUPABASE_S3_ENDPOINT       https://<project-ref>.supabase.co/storage/v1/s3
+#   SUPABASE_S3_REGION         region shown next to the S3 endpoint
+#   SUPABASE_S3_ACCESS_KEY_ID  Storage S3 access key
+#   SUPABASE_S3_SECRET_KEY     Storage S3 secret key
+#   GDRIVE_TOKEN               output of `rclone authorize` (see docs/BACKUPS.md)
+#   BACKUP_PASSPHRASE          encryption passphrase (keep a copy in a password manager)
+#   SUPABASE_URL               project URL, for logging failures to admin → Errors
+#   SUPABASE_SERVICE_ROLE_KEY  service key, same purpose
+
+name: Nightly backup
+
+on:
+  schedule:
+    - cron: "0 11 * * *" # 11:00 UTC = 2–3 AM Alaska time
+  workflow_dispatch: # "Run workflow" button for an on-demand backup
+
+concurrency:
+  group: nightly-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # rclone remotes, configured entirely from env (no config file on disk)
+      RCLONE_CONFIG_GDRIVE_TYPE: drive
+      RCLONE_CONFIG_GDRIVE_SCOPE: drive.file # can only see files it created
+      RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+      RCLONE_CONFIG_VAULT_TYPE: crypt
+      RCLONE_CONFIG_VAULT_REMOTE: "gdrive:Spectra Backups"
+      RCLONE_CONFIG_VAULT_FILENAME_ENCRYPTION: "off" # contents encrypted, names readable
+      RCLONE_CONFIG_VAULT_DIRECTORY_NAME_ENCRYPTION: "false"
+      RCLONE_CONFIG_SUPABASE_TYPE: s3
+      RCLONE_CONFIG_SUPABASE_PROVIDER: Other
+      RCLONE_CONFIG_SUPABASE_ENDPOINT: ${{ secrets.SUPABASE_S3_ENDPOINT }}
+      RCLONE_CONFIG_SUPABASE_REGION: ${{ secrets.SUPABASE_S3_REGION }}
+      RCLONE_CONFIG_SUPABASE_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_ACCESS_KEY_ID }}
+      RCLONE_CONFIG_SUPABASE_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET_KEY }}
+      RCLONE_CONFIG_SUPABASE_FORCE_PATH_STYLE: "true"
+    steps:
+      - name: Install rclone
+        run: curl -fsSL https://rclone.org/install.sh | sudo bash
+
+      - name: Unlock the encrypted Drive folder
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$BACKUP_PASSPHRASE" ]; then echo "BACKUP_PASSPHRASE secret is missing"; exit 1; fi
+          obscured=$(rclone obscure "$BACKUP_PASSPHRASE")
+          echo "::add-mask::$obscured"
+          echo "RCLONE_CONFIG_VAULT_PASSWORD=$obscured" >> "$GITHUB_ENV"
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Supabase's documented backup format: roles, schema, and data as separate
+      # files, restorable into a fresh Supabase project with psql.
+      - name: Dump the database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          day=$(date -u +%F)
+          mkdir -p "db/$day"
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f "db/$day/roles.sql" --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f "db/$day/schema.sql"
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f "db/$day/data.sql" --use-copy --data-only
+          tar -czf "db/$day.tar.gz" -C db "$day"
+          ls -lh "db/$day" "db/$day.tar.gz"
+          echo "DAY=$day" >> "$GITHUB_ENV"
+
+      - name: Upload database copy (daily, plus monthly on the 1st)
+        run: |
+          set -euo pipefail
+          rclone copyto "db/$DAY.tar.gz" "vault:database/daily/$DAY.tar.gz"
+          if [ "$(date -u +%d)" = "01" ]; then
+            rclone copyto "db/$DAY.tar.gz" "vault:database/monthly/$DAY.tar.gz"
+          fi
+
+      # Files never change after upload (a replaced license is a new file), so a
+      # one-way copy only uploads what's new and never deletes anything.
+      - name: Copy new Storage files
+        run: |
+          rclone copy supabase: vault:storage --fast-list --transfers 8 --stats-one-line -v
+
+      - name: Prune old database copies (keep 30 daily, 12 monthly)
+        run: |
+          rclone delete vault:database/daily --min-age 31d -v
+          rclone delete vault:database/monthly --min-age 366d -v
+
+      - name: Report failure to admin → Errors
+        if: failure()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] || exit 0
+          curl -fsS -X POST "$SUPABASE_URL/rest/v1/site_errors" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "content-type: application/json" -H "prefer: return=minimal" \
+            -d "{\"source\":\"server\",\"message\":\"Nightly backup failed\",\"detail\":\"See $RUN_URL\",\"route\":\"backup\",\"fingerprint\":\"nightly-backup\"}" || true
